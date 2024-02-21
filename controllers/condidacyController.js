@@ -2,7 +2,7 @@ const Condidacy = require("../models/condidacy");
 
 async function addCondidacy(req, res) {
   try {
-    const { date_postule, status, affiliation, document, specialite, anneediplome, user } = req.body;
+    const { date_postule, status, affiliation,  specialite, anneediplome, user } = req.body;
     const condidacy = new Condidacy({ date_postule, status, affiliation, document, specialite, anneediplome, user });
     await condidacy.save();
     res.status(201).json({ message: "Condidacy added successfully", condidacy });
