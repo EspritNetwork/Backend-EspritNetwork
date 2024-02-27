@@ -25,6 +25,7 @@ const OffreSchema = new Schema({
     },
     salaire: {
         type: Number,
+        required:false
     },
     langue: {
         type: String,
@@ -34,9 +35,13 @@ const OffreSchema = new Schema({
         type: String,
         required: true,
     },
+    statusOffre: {
+        type: Boolean,
+        default:true
+    },
+    // here we represente forign key test
     created_at: {
         type: Date,
-        default: Date.now,
     },
     updated_at: {
         type: Date,

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const condidacyController = require("../controller/condidacyController");
+const condidacyController = require("../controllers/condidacyController");
 
 router.post('/add', condidacyController.addCondidacy);
 router.get('/getall', condidacyController.getAllCondidacies);
