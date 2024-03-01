@@ -1,13 +1,15 @@
 const Cv = require("../models/cv");
 
+
 async function addCv(req, res) {
   try {
-    const { biographie, experience, competence, langue, projets, education, certifications, user } = req.body;
-    const cv = new Cv({ biographie, experience, competence, langue, projets, education, certifications, user });
+    const { contact, biographie, parcoursProfessionnels, parcoursAcademiques, competences, langues, user } = req.body;
+    const cv = new Cv({ contact, biographie, parcoursProfessionnels, parcoursAcademiques,competences,langues, user});
     await cv.save();
     res.status(201).json({ message: "CV added successfully", cv });
-  } catch (err) {
-    console.error(err);
+    console.log(cv)
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 }
@@ -20,6 +22,7 @@ async function getAllCvs(req, res) {
     res.status(400).json({ error: err });
   }
 }
+
 
 async function getCvById(req, res) {
   try {
