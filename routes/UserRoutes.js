@@ -2,7 +2,7 @@ const express = require("express");
 const asyncHandler = require("express-async-handler");
 const { protect, admin } = require("../Middleware/AuthMiddleware.js");
 const generateToken = require("../utils/generateToken.js");
-const User = require("./../Models/UserModel.js");
+const User = require("../models/User.js");
 const mailgun = require("mailgun-js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -136,7 +136,7 @@ userRouter.post(
 userRouter.post(
   "/",
   asyncHandler(async (req, res) => {
-    const { name, email, password,confirmPassword } = req.body;
+    const { name, email, password ,adresseC, confirmPassword } = req.body;
 
     const userExists = await User.findOne({ email });
     const patt=new RegExp(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/)
@@ -164,6 +164,7 @@ userRouter.post(
       name,
       email,
       password,
+      adresseC,
       confirmPassword,
       verfied: false,
       verifyToken: token,
@@ -178,7 +179,7 @@ userRouter.post(
           text: `http://localhost:3000/activate/${token}`,
         })
         .then((res) => console.log(res))
-        .catch((err) => console.err(err));
+        .catch((err) => console.log(err));
       res.status(201).json({
         message:"Please verify mail"
       });

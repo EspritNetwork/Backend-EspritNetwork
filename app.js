@@ -1,26 +1,27 @@
 const express = require("express");
 const http = require("http");
 const mongoose = require("mongoose");
-const bodyperser = require("body-parser");
+const bodyparser = require("body-parser");
 const config = require("./config/dbConnection.json");
-const cors = require("cors"); // Import cors middleware
+const cors = require("cors");
 const dotenv = require("dotenv");
+const googleAuth = require("./routes/index");
+const passport = require("passport");
+const session = require("express-session");
 
-//connect to bd
+
+// Connect to database
 mongoose
-	.connect(config.url, {
-		useNewUrlParser: true,
-		useUnifiedTopology: true,
-	})
-	.then(() => console.log("Connexion à MongoDB réussie !"))
-	.catch(() => console.log("Connexion à MongoDB échouée !"));
+  .connect(config.url)
+  .then(() => console.log("Connexion à MongoDB réussie !"))
+  .catch(() => console.log("Connexion à MongoDB échouée !"));
 
-//create an instance of the app
-var app = express();
+// Create an instance of the app
+const app = express();
 
-// for enabling cors middelware
+// Enable CORS middleware
 app.use(cors());
-app.use(bodyperser.json());
+app.use(bodyparser.json());
 const testRouter = require("./routes/test");
 const questionRouter = require("./routes/question");
 const cvRouter = require("./routes/cv");
@@ -29,8 +30,25 @@ const condidacyRouter = require("./routes/condidacy");
 const affiliationRouter = require("./routes/affiliation");
 const competenceRouter = require("./routes/competence");
 const departementRouter = require("./routes/departement");
+const uploadRouter = require('./routes/uploadRouter');
 const userRouter = require("./routes/UserRoutes");
+const domaineRouter = require("./routes/domaine");
 
+app.use(
+  session({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+app.use(express.urlencoded({ extended: false }));
+app.use(passport.initialize());
+require("./auth/google-auth")(passport);
+
+app.use("/", googleAuth);
+
+// API
 app.use("/api/users", userRouter);
 
 app.use("/test", testRouter);
@@ -41,11 +59,16 @@ app.use("/condidacy", condidacyRouter);
 app.use("/affiliation", affiliationRouter);
 app.use("/competence", competenceRouter);
 app.use("/departement", departementRouter);
+app.use('/upload', uploadRouter);
+app.use("/domaine", domaineRouter);
+
+
 
 dotenv.config();
+const PORT = process.env.PORT || 3000;
 
-//server configuration
+// Start the server
 const server = http.createServer(app);
-server.listen(3000, console.log("server listening on port 3000"));
+server.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
 
 module.exports = app;
