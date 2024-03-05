@@ -1,14 +1,23 @@
+const test = require("../models/test");
 const Test = require("../models/test");
 
 async function addTest(req, res) {
 	try {
-		const { datetest, titre, duree, resultat, user } = req.body;
-		const test = new Test({ datetest, titre, duree, resultat, user });
+		const test = new Test(req.body);
+		console.log(test);
 		await test.save();
 		res.status(201).json({ message: "Test added successfully", test });
 	} catch (err) {
 		console.error(err);
 		res.status(500).json({ error: "Internal Server Error" });
+	}
+}
+async function deleteAllTest(req, res) {
+	try {
+		await test.find().deleteMany();
+		res.status(200).json({ message: "All tests deleted successfully" });
+	} catch (err) {
+		res.status(400).json({ error: err });
 	}
 }
 
@@ -60,4 +69,5 @@ module.exports = {
 	getTestById,
 	deleteTest,
 	updateTest,
+	deleteAllTest,
 };

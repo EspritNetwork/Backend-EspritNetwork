@@ -28,6 +28,7 @@ const offreRouter = require("./routes/offre");
 const condidacyRouter = require("./routes/condidacy");
 const affiliationRouter = require("./routes/affiliation");
 const competenceRouter = require("./routes/competence");
+const domaineRouter = require("./routes/domaine");
 const departementRouter = require("./routes/departement");
 const userRouter = require("./routes/UserRoutes");
 
@@ -40,6 +41,7 @@ app.use("/offre", offreRouter);
 app.use("/condidacy", condidacyRouter);
 app.use("/affiliation", affiliationRouter);
 app.use("/competence", competenceRouter);
+app.use("/domaine", domaineRouter);
 app.use("/departement", departementRouter);
 
 dotenv.config();
