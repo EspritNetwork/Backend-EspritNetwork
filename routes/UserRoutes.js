@@ -2,7 +2,7 @@ const express = require("express");
 const asyncHandler = require("express-async-handler");
 const { protect, admin } = require("../Middleware/AuthMiddleware.js");
 const generateToken = require("../utils/generateToken.js");
-const User = require("./../Models/UserModel.js");
+const User = require("../models/User.js");
 const mailgun = require("mailgun-js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -23,11 +23,21 @@ userRouter.post(
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user.verified){
-      res.status(401);
-      throw new Error("User not verified");
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
     }
+
+    if (!user.verified) {
+      return res.status(401).json({ error: 'User not verified' });
+    }
+
     if (user && (await user.matchPassword(password))) {
+      res.cookie('jwt', generateToken(user), {
+        sameSite: 'None',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        secure: true, // Ajout de l'option secure pour les cookies sécurisés
+        httpOnly: true // Ajout de l'option httpOnly pour empêcher l'accès aux cookies depuis JavaScript
+      });
       res.json({
         _id: user._id,
         name: user.name,
@@ -36,14 +46,12 @@ userRouter.post(
         token: generateToken(user._id),
         createdAt: user.createdAt,
       });
-    } else if (!user.verfied) {
-      throw new Error("verify your contact information");
     } else {
-      res.status(401);
-      throw new Error("Invalid Email or Password");
+      res.status(401).json({ error: "Invalid Email or Password" });
     }
   })
 );
+
 
 userRouter.post(
   "/password-reset",
@@ -100,14 +108,13 @@ userRouter.post(
     const id = req.params.id;
     console.log(id);
     const payload = jwt.decode(id);
-    const userId = payload.id;
+    const userId = payload.id; 
     console.log(userId);
     const user = await User.findOne({ _id: userId });
     const patt=new RegExp(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/)
 
-      if(!patt.test(password)){
-      res.status(400);
-      throw new Error("password must contain at least eight characters, at least one number and both lower and uppercase letters and special characters");
+    if(!patt.test(password)){
+      return res.status(400).json({error:"password must contain at least eight characters, at least one number and both lower and uppercase letters and special characters"});
     }
 
     if (!user) {
@@ -119,8 +126,7 @@ userRouter.post(
     const salt = await bcrypt.genSalt(10);
 
     if(!patt.test(password)){
-      res.status(400);
-      throw new Error("password must contain at least eight characters, at least one number and both lower and uppercase letters and special characters");
+      return res.status(400).json({error:"password must contain at least eight characters, at least one number and both lower and uppercase letters and special characters"});
     }
 
     await User.findOneAndUpdate(
@@ -128,7 +134,7 @@ userRouter.post(
       { password: await bcrypt.hash(password, salt), token: "" }
     );
 
-    return res.status(200).send({ message: "Successfully reset password" });
+    return res.status(200).json({ message: "Successfully reset password" });
   })
 );
 
@@ -143,17 +149,17 @@ userRouter.post(
    
     if (userExists) {
       res.status(400);
-      throw new Error("User already exists");
+      res.status(401).json({error:"User already exists"});
     }
 
     if (password!=confirmPassword) {
       res.status(400);
-      throw new Error("Passwords does not match");
+      res.status(401).json({error:"Passwords does not match"});
     }
 
     if(!patt.test(password)){
       res.status(400);
-      throw new Error("password must contain at least eight characters, at least one number and both lower and uppercase letters and special characters");
+      res.status(401).json({error:"password must contain at least eight characters, at least one number and both lower and uppercase letters and special characters"});
     }
     const apiKey = "1f6aa33dab2c7e0350074b230b56a2d2-162d1f80-66f0a1de";
     const domain = "sandboxc7824dced682496eb2a77fe4823e50cb.mailgun.org";

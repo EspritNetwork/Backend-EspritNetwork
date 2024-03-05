@@ -5,26 +5,26 @@ const userSchema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: false,
     },
     email: {
       type: String,
-      required: true,
-      unique: true,
+      required: false,
+      unique: false,
     },
     password: {
       type: String,
-      required: true,
+      required: false,
     },
     confirmPassword: {
       type: String,
-      required: true,
+      required: false,
     },
     role: {
       type: String,
       enum: ["admin", "user", "staff"],
       default: "user",
-      required: true,
+      required: false,
     },
     token: {
       type: String,
@@ -32,13 +32,26 @@ const userSchema = mongoose.Schema(
     },
     isAdmin: {
       type: Boolean,
-      required: true,
+      required: false,
       default: false,
     },
     verified: {
       type: Boolean,
-      required: true,
+      required: false,
       default: false,
+    },
+     
+    googleId: {
+      type: String,
+      required: false,
+    },
+    secret: {
+      type: String,
+      required: false,
+    },
+    pic: {
+      type: String,
+      required: false,
     },
     verifyToken: {
       type: String,
@@ -46,7 +59,7 @@ const userSchema = mongoose.Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: false,
   }
 );
 
