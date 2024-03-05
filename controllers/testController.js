@@ -1,4 +1,8 @@
 const test = require("../models/test");
+<<<<<<< HEAD:controllers/testController.js
+=======
+const Test = require("../models/test");
+>>>>>>> cda636c082d628c8a149b9de53fe08bfcb1abd9c:controller/testController.js
 
 async function addTest(req, res) {
 	try {

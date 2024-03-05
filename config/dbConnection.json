@@ -1,2 +1,7 @@
 {
+<<<<<<< HEAD
     "url":"mongodb://127.0.0.1:27017/Piweb2024"}
+=======
+    "url": "mongodb://127.0.0.1:27017/piweb"
+}
+>>>>>>> cda636c082d628c8a149b9de53fe08bfcb1abd9c
