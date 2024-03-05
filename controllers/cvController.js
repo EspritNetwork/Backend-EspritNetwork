@@ -1,13 +1,22 @@
 const Cv = require("../models/cv");
 
 
+const defaultUserId = "65e383ad98ae7547e1fb5843";
+
 async function addCv(req, res) {
   try {
-    const { contact, biographie, parcoursProfessionnels, parcoursAcademiques, competences, langues, user } = req.body;
-    const cv = new Cv({ contact, biographie, parcoursProfessionnels, parcoursAcademiques,competences,langues, user});
-    await cv.save();
-    res.status(201).json({ message: "CV added successfully", cv });
-    console.log(cv)
+    const { contact, biographie, parcoursProfessionnels, parcoursAcademiques, competences, langues } = req.body;
+    const existingCv = await Cv.findOne({ user: defaultUserId }); // Utilisation de l'ID utilisateur statique
+    if (existingCv) {
+      // Mise à jour du CV existant
+      const updatedCv = await Cv.findByIdAndUpdate(existingCv._id, { contact, biographie, parcoursProfessionnels, parcoursAcademiques, competences, langues }, { new: true });
+      return res.status(200).json({ message: "CV updated successfully", cv: updatedCv });
+    } else {
+      // Création d'un nouveau CV
+      const cv = new Cv({ contact, biographie, parcoursProfessionnels, parcoursAcademiques, competences, langues, user: defaultUserId }); // Utilisation de l'ID utilisateur statique
+      await cv.save();
+      return res.status(201).json({ message: "CV added successfully", cv });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });

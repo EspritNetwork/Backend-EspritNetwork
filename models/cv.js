@@ -27,7 +27,7 @@ const CvSchema = new Schema({
         poste: String,
         dateDebut: Date,
         dateFin: Date,
-        nomEntreprise: String,
+        entreprise: String,
         description: String
       }],
       parcoursAcademiques: [{
