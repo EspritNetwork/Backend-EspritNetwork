@@ -1,4 +1,6 @@
 const Condidacy = require("../models/condidacy");
+const path = require('path');
+const fs = require('fs');
 
 async function addCondidacy(req, res) {
   try {
@@ -12,6 +14,40 @@ async function addCondidacy(req, res) {
   }
 }
 
+
+async function addCondidacy(req, res) {
+  try {
+    const { date_postule, status, affiliation, document, specialite, anneediplome, user, offre } = req.body;
+    const condidacy = new Condidacy({ date_postule, status, affiliation, document, specialite, anneediplome, user, offre });
+    await condidacy.save();
+    res.status(201).json({ message: "Condidacy added successfully", condidacy });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+
+async function getpdfcondiacy(req, res) {
+  try {
+    const pdfname = req.params.pdfname;
+    const documentPath = path.join(process.cwd(), 'DocumentsPdf', pdfname);
+
+    // Check if the file exists
+    if (fs.existsSync(documentPath)) {
+      res.status(200).sendFile(documentPath);
+    } else {
+      res.status(404).json({ error: 'PDF not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching PDF:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
+
+
 async function getAllCondidacies(req, res) {
   try {
     const condidacies = await Condidacy.find().populate('user'); // Use populate to include user details
@@ -23,12 +59,33 @@ async function getAllCondidacies(req, res) {
 
 async function getCondidacyById(req, res) {
   try {
-    const condidacy = await Condidacy.findById(req.params.id).populate('user'); // Use populate to include user details
+    const condidacy = await Condidacy.findById(req.params.id).populate('user').populate({
+      path: 'offre',
+      populate: {
+        path: 'user'
+      }
+    });
     res.status(200).json(condidacy);
   } catch (err) {
     res.status(400).json({ error: err });
   }
 }
+
+
+const getCondidcayByIdUser = async (req, res) => {
+  try {
+    const condidacy = await Condidacy.find({ user: req.params.id }).populate('user').populate({
+      path: 'offre',
+      populate: {
+        path: 'user'
+      }
+    });    res.status(200).json(condidacy);
+  } catch (error) {
+    console.error('Error fetching condidacy by user ID:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 
 async function deleteCondidacy(req, res) {
   try {
@@ -50,8 +107,10 @@ async function updateCondidacy(req, res) {
 
 module.exports = {
   addCondidacy,
+  getpdfcondiacy,
   getAllCondidacies,
   getCondidacyById,
   deleteCondidacy,
   updateCondidacy,
+  getCondidcayByIdUser
 };

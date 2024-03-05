@@ -7,5 +7,8 @@ router.get('/getall', condidacyController.getAllCondidacies);
 router.get('/getbyid/:id', condidacyController.getCondidacyById);
 router.delete('/delete/:id', condidacyController.deleteCondidacy);
 router.put('/update/:id', condidacyController.updateCondidacy);
+router.get('/getbyiduser/:id', condidacyController.getCondidcayByIdUser);
+router.get('/getpdf/:pdfname', condidacyController.getpdfcondiacy);
+
 
 module.exports = router;

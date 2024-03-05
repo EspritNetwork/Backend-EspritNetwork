@@ -25,15 +25,12 @@ const OffreSchema = new Schema({
     },
     salaire: {
         type: Number,
-        required:false
     },
     langue: {
         type: String,
-        required: true,
     },
     experience: {
         type: String,
-        required: true,
     },
     statusOffre: {
         type: Boolean,
