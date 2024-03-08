@@ -3,6 +3,7 @@ const router = express.Router();
 const questionController = require("../controllers/questionController");
 
 router.post("/add", questionController.addQuestion);
+router.post("/import", questionController.importQuestion);
 router.get("/getall", questionController.getAllQuestions);
 router.delete("/delall", questionController.deleteAllQuestions);
 router.get("/getbyid/:id", questionController.getQuestionById);

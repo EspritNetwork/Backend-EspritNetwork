@@ -9,12 +9,11 @@ const googleAuth = require("./routes/index");
 const passport = require("passport");
 const session = require("express-session");
 
-
 // Connect to database
 mongoose
-  .connect(config.url)
-  .then(() => console.log("Connexion à MongoDB réussie !"))
-  .catch(() => console.log("Connexion à MongoDB échouée !"));
+	.connect(config.url)
+	.then(() => console.log("Connexion à MongoDB réussie !"))
+	.catch(() => console.log("Connexion à MongoDB échouée !"));
 
 // Create an instance of the app
 const app = express();
@@ -29,18 +28,17 @@ const offreRouter = require("./routes/offre");
 const condidacyRouter = require("./routes/condidacy");
 const affiliationRouter = require("./routes/affiliation");
 const competenceRouter = require("./routes/competence");
-const domaineRouter = require("./routes/domaine");
 const departementRouter = require("./routes/departement");
-const uploadRouter = require('./routes/uploadRouter');
+const uploadRouter = require("./routes/uploadRouter");
 const userRouter = require("./routes/UserRoutes");
 const domaineRouter = require("./routes/domaine");
 
 app.use(
-  session({
-    secret: "secret",
-    resave: false,
-    saveUninitialized: false,
-  })
+	session({
+		secret: "secret",
+		resave: false,
+		saveUninitialized: false,
+	})
 );
 
 app.use(express.urlencoded({ extended: false }));
@@ -61,10 +59,8 @@ app.use("/affiliation", affiliationRouter);
 app.use("/competence", competenceRouter);
 app.use("/domaine", domaineRouter);
 app.use("/departement", departementRouter);
-app.use('/upload', uploadRouter);
+app.use("/upload", uploadRouter);
 app.use("/domaine", domaineRouter);
-
-
 
 dotenv.config();
 const PORT = process.env.PORT || 3000;
