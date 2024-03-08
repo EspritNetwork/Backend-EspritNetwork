@@ -30,60 +30,6 @@ async function addQuestion(req, res) {
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 }
-
-async function getAllQuestions(req, res) {
-	try {
-		const questions = await Question.find();
-		res.status(200).json(questions);
-	} catch (err) {
-		res.status(400).json({ error: err });
-	}
-}
-async function deleteAllQuestions(req, res) {
-	try {
-		await Question.find().deleteMany();
-		res.status(200).json({ message: "All questions deleted successfully" });
-	} catch (err) {
-		res.status(400).json({ error: err });
-	}
-}
-
-async function getQuestionById(req, res) {
-	try {
-		const question = await Question.findById(req.params.id);
-		res.status(200).json(question);
-	} catch (err) {
-		res.status(400).json({ error: err });
-	}
-}
-
-async function deleteQuestion(req, res) {
-	try {
-		const deletedQuestion = await Question.findByIdAndDelete(req.params.id);
-		res.status(200).json({
-			message: "Question deleted successfully",
-			question: deletedQuestion,
-		});
-	} catch (err) {
-		res.status(400).json({ error: err });
-	}
-}
-
-async function updateQuestion(req, res) {
-	try {
-		const updatedQuestion = await Question.findByIdAndUpdate(
-			req.params.id,
-			req.body,
-			{ new: true }
-		);
-		res.status(200).json({
-			message: "Question updated successfully",
-			question: updatedQuestion,
-		});
-	} catch (err) {
-		res.status(400).json({ error: err });
-	}
-}
 const storage = multer.diskStorage({
 	destination: (req, file, cb) => {
 		cb(null, "./uploads/");
@@ -157,6 +103,60 @@ async function importQuestion(req, res) {
 		res.status(500).json({ success: false, message: "Server Error" });
 	}
 }
+async function getAllQuestions(req, res) {
+	try {
+		const questions = await Question.find();
+		res.status(200).json(questions);
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
+}
+async function deleteAllQuestions(req, res) {
+	try {
+		await Question.find().deleteMany();
+		res.status(200).json({ message: "All questions deleted successfully" });
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
+}
+
+async function getQuestionById(req, res) {
+	try {
+		const question = await Question.findById(req.params.id);
+		res.status(200).json(question);
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
+}
+
+async function deleteQuestion(req, res) {
+	try {
+		const deletedQuestion = await Question.findByIdAndDelete(req.params.id);
+		res.status(200).json({
+			message: "Question deleted successfully",
+			question: deletedQuestion,
+		});
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
+}
+
+async function updateQuestion(req, res) {
+	try {
+		const updatedQuestion = await Question.findByIdAndUpdate(
+			req.params.id,
+			req.body,
+			{ new: true }
+		);
+		res.status(200).json({
+			message: "Question updated successfully",
+			question: updatedQuestion,
+		});
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
+}
+
 module.exports = {
 	addQuestion,
 	getAllQuestions,
