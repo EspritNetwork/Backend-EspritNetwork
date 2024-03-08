@@ -3,6 +3,7 @@ const Technologie = require("../models/competence");
 const Domaine = require("../models/domaine");
 const { addCompetence } = require("./competenceController");
 const { addDomaine } = require("./domaineController");
+
 async function addQuestion(req, res) {
 	try {
 		const question = new Question(req.body);
