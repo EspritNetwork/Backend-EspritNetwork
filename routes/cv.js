@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const cvController = require("../controller/cvController");
+const cvController = require("../controllers/cvController");
 
 router.post('/add', cvController.addCv);
 router.get('/getall', cvController.getAllCvs);
