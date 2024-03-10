@@ -57,6 +57,18 @@ async function getQuestionById(req, res) {
 	}
 }
 
+async function getQuestionByDomaine(req, res) {
+	try {
+		const domaine = req.body.domaine;
+		const questions = await Question.find({
+			domaine: domaine,
+		});
+		res.status(200).json(questions);
+	} catch (err) {
+		res.status(400).json({ error: err.message });
+	}
+}
+
 async function deleteQuestion(req, res) {
 	try {
 		const deletedQuestion = await Question.findByIdAndDelete(req.params.id);
@@ -73,7 +85,7 @@ async function updateQuestion(req, res) {
 	try {
 		const updatedQuestion = await Question.findByIdAndUpdate(
 			req.params.id,
-			req.body,
+			req.body.updatedQuestion,
 			{ new: true }
 		);
 		res.status(200).json({
@@ -81,7 +93,7 @@ async function updateQuestion(req, res) {
 			question: updatedQuestion,
 		});
 	} catch (err) {
-		res.status(400).json({ error: err });
+		res.status(400).json({ error: err.message });
 	}
 }
 const storage = multer.diskStorage({
@@ -130,10 +142,15 @@ async function importQuestion(req, res) {
 
 				for (let j = 1; j <= 4; j++) {
 					const optionKey = `Option ${String.fromCharCode(64 + j)}`;
+
 					if (data[i][optionKey]) {
 						const isCorrect =
 							data[i]["Réponse correcte"] === data[i][optionKey];
-						options.push([{ option: data[i][optionKey], isCorrect }]);
+
+						options.push({
+							option: data[i][optionKey],
+							isCorrect: isCorrect,
+						});
 					}
 				}
 
@@ -147,7 +164,7 @@ async function importQuestion(req, res) {
 				};
 				questionsToAdd.push(question);
 			}
-			console.log(questionsToAdd);
+			// console.log(questionsToAdd);
 			const addedQuestions = await Question.insertMany(questionsToAdd);
 
 			res.status(201).json({ success: true, questions: addedQuestions });
@@ -165,4 +182,5 @@ module.exports = {
 	updateQuestion,
 	deleteAllQuestions,
 	importQuestion,
+	getQuestionByDomaine,
 };
