@@ -42,6 +42,20 @@ async function getCvById(req, res) {
   }
 }
 
+async function getCvByUserId(req, res) {
+  try {
+    const userId = req.params.id; // L'ID de l'utilisateur
+    const cv = await Cv.findOne({ user: userId }); // Recherche du CV avec l'ID de l'utilisateur
+    if (!cv) {
+      return res.status(404).json({ error: "CV not found for this user" });
+    }
+    res.status(200).json(cv);
+  } catch (err) {
+    res.status(400).json({ error: err });
+  }
+}
+
+
 async function deleteCv(req, res) {
   try {
     const deletedCv = await Cv.findByIdAndDelete(req.params.id);
@@ -66,4 +80,5 @@ module.exports = {
   getCvById,
   deleteCv,
   updateCv,
+  getCvByUserId
 };
