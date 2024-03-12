@@ -20,7 +20,9 @@ const CvSchema = new Schema({
           type: String
         },
         lienGit: String,
-        lienLinkedIn: String
+        lienLinkedIn: String,
+        imageResume: String,
+        titreProfil: String
       },
       biographie: String,
       parcoursProfessionnels: [{

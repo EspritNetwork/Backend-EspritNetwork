@@ -5,15 +5,15 @@ const defaultUserId = "65e383ad98ae7547e1fb5843";
 
 async function addCv(req, res) {
   try {
-    const { contact, biographie, parcoursProfessionnels, parcoursAcademiques, competences, langues } = req.body;
+    const {contact, biographie, parcoursProfessionnels, parcoursAcademiques, competences, langues } = req.body;
     const existingCv = await Cv.findOne({ user: defaultUserId }); // Utilisation de l'ID utilisateur statique
     if (existingCv) {
       // Mise à jour du CV existant
-      const updatedCv = await Cv.findByIdAndUpdate(existingCv._id, { contact, biographie, parcoursProfessionnels, parcoursAcademiques, competences, langues }, { new: true });
+      const updatedCv = await Cv.findByIdAndUpdate(existingCv._id, {contact, biographie, parcoursProfessionnels, parcoursAcademiques, competences, langues }, { new: true });
       return res.status(200).json({ message: "CV updated successfully", cv: updatedCv });
     } else {
       // Création d'un nouveau CV
-      const cv = new Cv({ contact, biographie, parcoursProfessionnels, parcoursAcademiques, competences, langues, user: defaultUserId }); // Utilisation de l'ID utilisateur statique
+      const cv = new Cv({contact, biographie, parcoursProfessionnels, parcoursAcademiques, competences, langues, user: defaultUserId }); // Utilisation de l'ID utilisateur statique
       await cv.save();
       return res.status(201).json({ message: "CV added successfully", cv });
     }
@@ -74,11 +74,25 @@ async function updateCv(req, res) {
   }
 }
 
+//Image 
+async function uploadImageCv(req, res) {
+  try {
+      const { imageDataUrl } = req.body;
+      const base64Data = imageDataUrl.split(';base64,').pop();// Séparez le préfixe de l'image (data:image/png;base64,)
+      const imageBuffer = Buffer.from(base64Data, 'base64'); // Convertissez les données base64 en un buffer
+      res.status(200).json({ message: 'Image uploaded successfully' }); // Enregistrez le buffer dans un fichier ou traitez-le selon vos besoins;
+  } catch (error) {
+      console.error('Error uploading image:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
 module.exports = {
   addCv,
   getAllCvs,
   getCvById,
   deleteCv,
   updateCv,
-  getCvByUserId
+  getCvByUserId,
+  uploadImageCv
 };
