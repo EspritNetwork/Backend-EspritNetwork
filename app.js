@@ -24,14 +24,19 @@ var app = express();
 app.use(cors());
 
 
+
 const testRouter = require("./routes/test");
 const questionRouter = require("./routes/question");
 const cvRouter = require("./routes/cv");
 const offreRouter = require("./routes/offre");
 const condidacyRouter = require("./routes/condidacy");
 const userRouter = require("./routes/user");
+const collectionRouter = require("./routes/collection");
 
-app.use(bodyperser.json());
+
+// Configuration de la limite de taille maximale pour les données de requête
+app.use(bodyperser.json({ limit: '10500mb' }));
+app.use(bodyperser.urlencoded({ extended: true, limit: '10500mb' }));
 
 
 app.use("/test", testRouter);
@@ -40,6 +45,7 @@ app.use("/cv", cvRouter);
 app.use("/offre", offreRouter);
 app.use("/condidacy", condidacyRouter);
 app.use("/user", userRouter);
+app.use("/collection", collectionRouter );
 
 
 
