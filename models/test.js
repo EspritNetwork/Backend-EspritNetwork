@@ -11,10 +11,6 @@ const TestSchema = new Schema({
 		type: Number,
 		required: true,
 	},
-	nbQuestion: {
-		type: Number,
-		require: true,
-	},
 	questions: { type: Array },
 });
 
