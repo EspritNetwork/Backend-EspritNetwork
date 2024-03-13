@@ -3,6 +3,7 @@ const router = express.Router();
 const testController = require("../controllers/testController");
 
 router.post("/add", testController.addTest);
+router.post("/addAutomatic", testController.addAutomaticTest);
 router.get("/getall", testController.getAllTests);
 router.delete("/delall", testController.deleteAllTest);
 router.get("/getbyid/:id", testController.getTestById);

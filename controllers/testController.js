@@ -1,5 +1,5 @@
 const Test = require("../models/test");
-
+const Question = require("../models/question");
 async function addTest(req, res) {
 	try {
 		const test = new Test(req.body);
@@ -9,6 +9,108 @@ async function addTest(req, res) {
 	} catch (err) {
 		console.error(err);
 		res.status(500).json({ error: "Internal Server Error" });
+	}
+}
+
+async function addAutomaticTest(req, res) {
+	try {
+		console.log(req.body);
+		const domaine = req.body.domaine;
+		const categorie = req.body.categorie;
+		const technologie = req.body.technologie;
+		const description = req.body.description;
+		const duree = req.body.duree;
+		const nbQN1 = parseInt(req.body.nbQN1);
+		const nbQN2 = parseInt(req.body.nbQN2);
+		const nbQN3 = parseInt(req.body.nbQN3);
+		let questionsN1 = [];
+		let questionsN2 = [];
+		let questionsN3 = [];
+		let ok = false;
+		let data = [];
+		const nbQuestion = nbQN1 + nbQN2 + nbQN3;
+		console.log(req.body.nbQN1);
+		console.log("..Nombres des question pour le test : " + nbQuestion);
+		console.log("1. generer des question pour le test pour chaque niveau ");
+		if (nbQN1) {
+			let question = await Question.find({
+				technologie: technologie,
+				niveau: "Basique",
+			});
+
+			data = question;
+
+			for (let i = 0; i < nbQN1; i++) {
+				let n = Math.floor(Math.random() * (data.length - 1));
+				n = n + 1 > data.length - 1 ? n : n + 1;
+				console.log(n, data.length);
+				var Q = data[n];
+				questionsN1.push(Q);
+			}
+			console.log("questionsN1 " + questionsN1);
+			ok = true;
+		}
+		if (nbQN2) {
+			let question = await Question.find({
+				technologie: technologie,
+				niveau: "Intermédiaire",
+			});
+			data = question;
+			console.log("questionsN2 ", data);
+			for (let i = 0; i < nbQN2; i++) {
+				let n = Math.floor(Math.random() * (data.length - 1));
+				n = n + 1 > data.length - 1 ? n : n + 1;
+				console.log(n, data.length);
+				var Q = data[n];
+				questionsN2.push(Q);
+			}
+			ok = true;
+		}
+		if (nbQN3) {
+			let question = await Question.find({
+				technologie: technologie,
+				niveau: "Avancé",
+			});
+			data = question;
+			for (let i = 0; i < nbQN3; i++) {
+				let n = Math.floor(Math.random() * (data.length - 1));
+				n = n + 1 > data.length - 1 ? n : n + 1;
+				console.log(n, data.length);
+				var Q = data[n];
+				questionsN3.push(Q);
+			}
+			console.log("questionsN3:  " + questionsN3);
+			ok = true;
+		}
+
+		let questions = [].concat(questionsN1, questionsN2, questionsN3);
+		console.log("questions" + questions);
+
+		console.log("3. Affecter le test à ");
+		console.log("ok = ", ok);
+		if (ok === true) {
+			const test = await Test.create({
+				domaine,
+				categorie,
+				technologie,
+				questions,
+				duree,
+				description,
+			});
+			console.log("le tests ont été effectué  avec succès", test);
+		} else {
+			console.log("Probléme lors de la création du test");
+			return res
+				.status(500)
+				.json({ message: "Probléme lors de la création du test", ok });
+		}
+
+		return res.status(200).json({
+			message: "Test à été cree  avec succès",
+		});
+	} catch (errors) {
+		console.log(errors.message);
+		return res.status(500).json({ message: errors.message });
 	}
 }
 async function deleteAllTest(req, res) {
@@ -56,7 +158,7 @@ async function updateTest(req, res) {
 		});
 		res
 			.status(200)
-			.json({ message: "Test updated successfully", test: updatedTest });
+			.json({ message: "Test updated successfully", test: updatedTestev});
 	} catch (err) {
 		res.status(400).json({ error: err });
 	}
@@ -64,6 +166,7 @@ async function updateTest(req, res) {
 
 module.exports = {
 	addTest,
+	addAutomaticTest,
 	getAllTests,
 	getTestById,
 	deleteTest,
