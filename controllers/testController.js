@@ -1,5 +1,6 @@
 const Test = require("../models/test");
 const Question = require("../models/question");
+const PassageTest = require("../models/PassageTest");
 async function addTest(req, res) {
 	try {
 		const test = new Test(req.body);
@@ -158,12 +159,38 @@ async function updateTest(req, res) {
 		});
 		res
 			.status(200)
-			.json({ message: "Test updated successfully", test: updatedTestev});
+			.json({ message: "Test updated successfully", test: updatedTestev });
 	} catch (err) {
 		res.status(400).json({ error: err });
 	}
 }
+async function getbyCandidat(req, res) {
+	try {
+		const idCandidat = req.query.idCandidat;
+		const tests = await PassageTest.find({ idCandidat: idCandidat });
+		resultat = [];
+		for (let i = 0; i < tests.length; i++) {
+			const test = await Test.findById(tests[i].idTest);
+			resultat.push({ ...test, date: tests[i].date, etat: tests[i].etat });
 
+			console.log("resultat", resultat);
+		}
+		console.log("tests", resultat);
+
+		res.status(200).json(resultat);
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
+}
+async function AffecterTestToCondidat(req, res) {
+	try {
+		const resultat = new PassageTest(req.body);
+		console.log(resultat);
+		await resultat.save();
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
+}
 module.exports = {
 	addTest,
 	addAutomaticTest,
@@ -172,4 +199,6 @@ module.exports = {
 	deleteTest,
 	updateTest,
 	deleteAllTest,
+	getbyCandidat,
+	AffecterTestToCondidat,
 };
