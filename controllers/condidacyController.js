@@ -15,18 +15,6 @@ async function addCondidacy(req, res) {
 }
 
 
-async function addCondidacy(req, res) {
-  try {
-    const { date_postule, status, affiliation, document, specialite, anneediplome, user, offre } = req.body;
-    const condidacy = new Condidacy({ date_postule, status, affiliation, document, specialite, anneediplome, user, offre });
-    await condidacy.save();
-    res.status(201).json({ message: "Condidacy added successfully", condidacy });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-}
-
 
 async function getpdfcondiacy(req, res) {
   try {
@@ -79,7 +67,8 @@ const getCondidcayByIdUser = async (req, res) => {
       populate: {
         path: 'user'
       }
-    });    res.status(200).json(condidacy);
+    }).sort({ date_postule: -1 });    
+    res.status(200).json(condidacy);
   } catch (error) {
     console.error('Error fetching condidacy by user ID:', error);
     res.status(500).json({ error: 'Internal Server Error' });

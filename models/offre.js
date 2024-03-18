@@ -36,6 +36,9 @@ const OffreSchema = new Schema({
         type: Boolean,
         default:true
     },
+    dateExpiration:{
+        type: Date
+    },
     // here we represente forign key test
     created_at: {
         type: Date,

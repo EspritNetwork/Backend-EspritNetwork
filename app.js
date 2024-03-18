@@ -16,12 +16,18 @@ mongoose
   .then(() => console.log("Connexion à MongoDB réussie !"))
   .catch(() => console.log("Connexion à MongoDB échouée !"));
 
+
+  
 // Create an instance of the app
 const app = express();
 
+
+// Configuration de la limite de taille maximale pour les données de requête
+app.use(bodyparser.json({ limit: '10500mb' }));
+app.use(bodyparser.urlencoded({ extended: true, limit: '10500mb' }));
+
 // Enable CORS middleware
 app.use(cors());
-app.use(bodyparser.json());
 const testRouter = require("./routes/test");
 const questionRouter = require("./routes/question");
 const cvRouter = require("./routes/cv");
@@ -33,6 +39,9 @@ const departementRouter = require("./routes/departement");
 const uploadRouter = require('./routes/uploadRouter');
 const userRouter = require("./routes/UserRoutes");
 const domaineRouter = require("./routes/domaine");
+const collectionRouter = require("./routes/collection");
+
+
 
 app.use(
   session({
@@ -41,6 +50,9 @@ app.use(
     saveUninitialized: false,
   })
 );
+
+
+
 
 app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
@@ -61,6 +73,7 @@ app.use("/competence", competenceRouter);
 app.use("/departement", departementRouter);
 app.use('/upload', uploadRouter);
 app.use("/domaine", domaineRouter);
+app.use("/collection", collectionRouter );
 
 
 

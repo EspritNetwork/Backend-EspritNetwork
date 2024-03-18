@@ -9,7 +9,7 @@ const QuestionSchema = new Schema({
 	niveau: { type: String },
 	titre: { type: String },
 	options: {
-		type: [Array],
+		type: Array,
 		required: true,
 	},
 });
