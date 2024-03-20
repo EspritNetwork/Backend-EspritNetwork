@@ -11,7 +11,7 @@ router.delete("/delete/:id", testController.deleteTest);
 router.put("/update/:id", testController.updateTest);
 //passage de test
 router.post("/AffecterTestToCondidat", testController.AffecterTestToCondidat);
+router.put("/passTest", testController.PassTest);
 router.get("/getbyCandidat", testController.getbyCandidat);
-
 
 module.exports = router;
