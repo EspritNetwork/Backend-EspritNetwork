@@ -1,5 +1,6 @@
 const Test = require("../models/test");
 const Question = require("../models/question");
+const PassageTest = require("../models/PassageTest");
 async function addTest(req, res) {
 	try {
 		const test = new Test(req.body);
@@ -153,17 +154,57 @@ async function deleteTest(req, res) {
 
 async function updateTest(req, res) {
 	try {
-		const updatedTest = await Test.findByIdAndUpdate(req.params.id, req.body, {
-			new: true,
-		});
+		const updatedTest = await Test.findByIdAndUpdate(
+			req.params.id,
+			req.body.test,
+			{ new: true }
+		);
 		res
 			.status(200)
-			.json({ message: "Test updated successfully", test: updatedTestev});
+			.json({ message: "Test updated successfully", test: updatedTest });
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
+}
+async function getbyCandidat(req, res) {
+	try {
+		const idCandidat = req.query.idCandidat;
+		const tests = await PassageTest.find({ idCandidat: idCandidat });
+		resultat = [];
+		for (let i = 0; i < tests.length; i++) {
+			const test = await Test.findById(tests[i].idTest);
+			resultat.push({ ...test, date: tests[i].date, etat: tests[i].etat });
+		}
+
+		res.status(200).json(resultat);
 	} catch (err) {
 		res.status(400).json({ error: err });
 	}
 }
 
+async function AffecterTestToCondidat(req, res) {
+	try {
+		const resultat = new PassageTest(req.body);
+		console.log(resultat);
+		await resultat.save();
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
+}
+async function PassTest(req, res) {
+	// const { idTest, reponses, idCandidat, idOffre } = req.body;
+	const { idTest, reponses, idCandidat } = req.body;
+	console.log(idTest, reponses);
+
+	const result = await PassageTest.findOneAndUpdate(
+		{ idTest: idTest, idCandidat: idCandidat },
+		{ $set: { response: reponses } },
+		{ new: true }
+	);
+
+	console.log("Updated Document:", result);
+	res.status(200).json({ message: "Added successfully", test: result });
+}
 module.exports = {
 	addTest,
 	addAutomaticTest,
@@ -172,4 +213,7 @@ module.exports = {
 	deleteTest,
 	updateTest,
 	deleteAllTest,
+	getbyCandidat,
+	AffecterTestToCondidat,
+	PassTest,
 };
