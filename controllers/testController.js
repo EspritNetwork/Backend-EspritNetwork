@@ -1,6 +1,8 @@
 const Test = require("../models/test");
+const Offre = require("../models/offre");
 const Question = require("../models/question");
 const PassageTest = require("../models/PassageTest");
+const { response } = require("express");
 async function addTest(req, res) {
 	try {
 		const test = new Test(req.body);
@@ -126,6 +128,7 @@ async function deleteAllTest(req, res) {
 async function getAllTests(req, res) {
 	try {
 		const tests = await Test.find();
+
 		res.status(200).json(tests);
 	} catch (err) {
 		res.status(400).json({ error: err });
@@ -137,6 +140,7 @@ async function getTestById(req, res) {
 		const test = await Test.findById(req.params.id);
 		res.status(200).json(test);
 	} catch (err) {
+		console.log("err", err.message);
 		res.status(400).json({ error: err });
 	}
 }
@@ -173,8 +177,226 @@ async function getbyCandidat(req, res) {
 		resultat = [];
 		for (let i = 0; i < tests.length; i++) {
 			const test = await Test.findById(tests[i].idTest);
-			resultat.push({ ...test, date: tests[i].date, etat: tests[i].etat });
+			resultat.push({
+				...test,
+				date: tests[i].date,
+				etat: tests[i].etat,
+				test: test,
+			});
 		}
+		res.status(200).json(resultat);
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
+}
+
+async function affecterTestAuCandidat(req, res) {
+	try {
+		console.log(req.body);
+		const { idTest, idCandidat } = req.body;
+
+		// Vérifier si le test a déjà été envoyé au candidat
+		const exist = await PassageTest.findOne({ idTest, idCandidat });
+		if (exist) {
+			return res
+				.status(400)
+				.json({ message: "Le test a déjà été envoyé au candidat." });
+		}
+
+		// Vérifier si un candidat a été sélectionné
+		if (!idCandidat) {
+			return res
+				.status(400)
+				.json({ message: "Veuillez sélectionner un candidat." });
+		}
+
+		// Créer un nouvel enregistrement pour affecter le test au candidat
+		const newPassageTest = new PassageTest(req.body);
+
+		// Sauvegarder le nouvel enregistrement dans la base de données
+		await newPassageTest.save();
+		console.log(newPassageTest);
+		// Répondre avec succès
+		return res.status(201).json({
+			message: "Le test a été envoyé avec succès.",
+			test: newPassageTest,
+		});
+	} catch (error) {
+		console.error("Erreur lors de l'affectation du test au candidat :", error);
+		return res.status(500).json({
+			error:
+				"Une erreur est survenue lors de l'affectation du test au candidat.",
+		});
+	}
+}
+
+// async function PassTest(req, res) {
+// 	// const { idTest, reponses, idCandidat, idOffre } = req.body;
+// 	try {
+// 		//console.log("PassTest");
+// 		const { idTest, reponses, idCandidat } = req.body;
+// 		// console.log(idTest, reponses);
+// 		//chercher  si le candidat a deja passer le test ou non si oui   on supprime l'ancien passage et on ajoute le nouveau passage
+// 		// on cherche le passage de test selon l'objet reponse si il  vide ou non
+// 		const passage = await PassageTest.findOne({
+// 			idTest: idTest,
+// 			idCandidat: idCandidat,
+// 		});
+// 		if (passage) {
+// 			console.log("passage", passage);
+// 			if (passage.response.length > 0) {
+// 				await PassageTest.findOneAndUpdate(
+// 					{ idTest: idTest, idCandidat: idCandidat },
+// 					{ $set: { response: "", etat: true } },
+// 					{ new: true }
+// 				);
+// 			}
+// 		}
+// 		const res1 = await PassageTest.findOneAndUpdate(
+// 			{ idTest: idTest, idCandidat: idCandidat },
+// 			{ $set: { response: reponses, etat: true } },
+// 			{ new: true }
+// 		);
+// 		// console.log("Updated Document:", res1);
+
+// 		/*
+// 		 *calculer le score de candidat selon les reponses si c'est correct ou non
+// 		 * si c'est correct et question de niveau basiqe  on ajoute 1
+// 		 * sinon si c'est de niveau intermediaire on ajoute 2
+// 		 * sinon on ajoute 3
+// 		 */
+// 		let score = 0;
+// 		const test = await Test.findById(idTest);
+// 		const questions = test.questions;
+// 		console.log("questions", questions);
+// 		//Parcourir les questions et les reponses de candidat pour calculer le score
+// 		for (let i = 0; i < questions.length; i++) {
+// 			if (questions[i]._id.toString() === reponses[i].idQuestion.toString()) {
+// 				console.log("if 1 yes");
+
+// 				const arrayOptions = questions[i].options;
+// 				for (let index = 0; index < arrayOptions.length; index++) {
+// 					console.log(
+// 						reponses[i].reponse,
+// 						"reponses[i].reponse",
+// 						arrayOptions[index].option,
+// 						"questions[i].options.option",
+// 						arrayOptions[index].isCorrect,
+// 						"questions[i].options.isCorrect"
+// 					);
+// 					if (
+// 						(reponses[i].reponse === arrayOptions[index].option &&
+// 							arrayOptions[index].isCorrect) === true
+// 					) {
+// 						console.log("if 2 yes :");
+// 						console.log(
+// 							reponses[i].reponse === arrayOptions[index].option &&
+// 								arrayOptions[index].isCorrect === true
+// 						);
+// 						console.log("questions[i].niveau", questions[i].niveau);
+// 						if (questions[i].niveau === "Basique") {
+// 							score += 1;
+// 						} else if (questions[i].niveau === "Intermédiaire") {
+// 							score += 2;
+// 						} else {
+// 							score += 3;
+// 						}
+// 					}
+// 				}
+// 			}
+// 		}
+// 		console.log("score", score);
+// 		const result = await PassageTest.findOneAndUpdate(
+// 			{ idTest: idTest, idCandidat: idCandidat },
+// 			{ $set: { score: score } },
+// 			{ new: true }
+// 		);
+
+// 		// console.log("Updated Document:", result);
+// 		res.status(200).json({ message: "Added successfully", test: result });
+// 	} catch (error) {
+// 		console.log("error", error.message);
+// 	}
+// }
+async function PassTest(req, res) {
+	try {
+		const { idTest, reponses, idCandidat } = req.body;
+		console.log(req.body);
+		// Chercher si le candidat a déjà passé le test et mettre à jour ou créer le passage de test
+		let passage = await PassageTest.findOne({
+			idTest: idTest,
+			idCandidat: idCandidat,
+		});
+		if (passage) {
+			if (passage.response.length > 0) {
+				await PassageTest.findOneAndUpdate(
+					{ idTest: idTest, idCandidat: idCandidat },
+					{ $set: { response: "", etat: true } },
+					{ new: true }
+				);
+			}
+		}
+		const resss = await PassageTest.findOneAndUpdate(
+			{ idTest: idTest, idCandidat: idCandidat },
+			{ $set: { response: reponses, etat: true } },
+			{ new: true }
+		);
+
+		// Calcul du score en parcourant les réponses et les questions
+		let score = 0;
+		const test = await Test.findById(idTest);
+		const questions = test.questions;
+		for (let i = 0; i < questions.length; i++) {
+			const questionId = questions[i]._id.toString();
+			const response = reponses.find((item) => item.idQuestion === questionId);
+			if (response) {
+				const question = questions[i];
+				const option = question.options.find(
+					(opt) => opt.option === response.reponse && opt.isCorrect
+				);
+				if (option) {
+					if (question.niveau === "Basique") {
+						score += 1;
+					} else if (question.niveau === "Intermédiaire") {
+						score += 2;
+					} else {
+						score += 3;
+					}
+				}
+			}
+		}
+
+		// Mettre à jour le score du passage de test
+		const result = await PassageTest.findOneAndUpdate(
+			{ idTest: idTest, idCandidat: idCandidat },
+			{ $set: { score: score } },
+			{ new: true }
+		);
+
+		res.status(200).json({ message: "Added successfully", test: result });
+	} catch (error) {
+		console.log("error", error.message);
+		res.status(500).json({ message: "Internal server error" });
+	}
+}
+
+async function getTestPasserbyCandidat(req, res) {
+	try {
+		console.log("getTestPasserbyCandidat :  ", req.query);
+		const { idCandidat } = req.query; // Utilisation de req.query pour récupérer les paramètres de la requête GET
+		const tests = await PassageTest.find({ idCandidat: idCandidat });
+		resultat = [];
+		for (let i = 0; i < tests.length; i++) {
+			const test = await Test.findById(tests[i].idTest);
+			const off = await Offre.findById(tests[i].idOffre);
+			resultat.push({
+				...test,
+				passage: tests[i],
+				test: test,
+				offre: off,
+			});
+		}
+		console.log(resultat);
 
 		res.status(200).json(resultat);
 	} catch (err) {
@@ -182,29 +404,6 @@ async function getbyCandidat(req, res) {
 	}
 }
 
-async function AffecterTestToCondidat(req, res) {
-	try {
-		const resultat = new PassageTest(req.body);
-		console.log(resultat);
-		await resultat.save();
-	} catch (err) {
-		res.status(400).json({ error: err });
-	}
-}
-async function PassTest(req, res) {
-	// const { idTest, reponses, idCandidat, idOffre } = req.body;
-	const { idTest, reponses, idCandidat } = req.body;
-	console.log(idTest, reponses);
-
-	const result = await PassageTest.findOneAndUpdate(
-		{ idTest: idTest, idCandidat: idCandidat },
-		{ $set: { response: reponses } },
-		{ new: true }
-	);
-
-	console.log("Updated Document:", result);
-	res.status(200).json({ message: "Added successfully", test: result });
-}
 module.exports = {
 	addTest,
 	addAutomaticTest,
@@ -214,6 +413,7 @@ module.exports = {
 	updateTest,
 	deleteAllTest,
 	getbyCandidat,
-	AffecterTestToCondidat,
+	affecterTestAuCandidat,
 	PassTest,
+	getTestPasserbyCandidat,
 };
