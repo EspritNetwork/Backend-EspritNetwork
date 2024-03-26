@@ -18,6 +18,9 @@ const PassageTest = new Schema({
 	date: {
 		type: Date,
 	},
+	invited_at: {
+		type: Date,
+	},
 	response: {
 		type: Array,
 	},

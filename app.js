@@ -32,6 +32,7 @@ const departementRouter = require("./routes/departement");
 const uploadRouter = require("./routes/uploadRouter");
 const userRouter = require("./routes/UserRoutes");
 const domaineRouter = require("./routes/domaine");
+const interviewRouter = require("./routes/interview");
 
 app.use(
 	session({
@@ -61,6 +62,7 @@ app.use("/domaine", domaineRouter);
 app.use("/departement", departementRouter);
 app.use("/upload", uploadRouter);
 app.use("/domaine", domaineRouter);
+app.use("/interview", interviewRouter);
 
 dotenv.config();
 const PORT = process.env.PORT || 3000;

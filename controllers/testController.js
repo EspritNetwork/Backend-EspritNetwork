@@ -189,11 +189,13 @@ async function getbyCandidat(req, res) {
 		res.status(400).json({ error: err });
 	}
 }
+/**passage des tests : Section :  */
 
 async function affecterTestAuCandidat(req, res) {
 	try {
 		console.log(req.body);
 		const { idTest, idCandidat } = req.body;
+		let data = req.body;
 
 		// Vérifier si le test a déjà été envoyé au candidat
 		const exist = await PassageTest.findOne({ idTest, idCandidat });
@@ -209,9 +211,9 @@ async function affecterTestAuCandidat(req, res) {
 				.status(400)
 				.json({ message: "Veuillez sélectionner un candidat." });
 		}
-
+		const invited_at = new Date();
 		// Créer un nouvel enregistrement pour affecter le test au candidat
-		const newPassageTest = new PassageTest(req.body);
+		const newPassageTest = new PassageTest({ ...data, invited_at: new Date() });
 
 		// Sauvegarder le nouvel enregistrement dans la base de données
 		await newPassageTest.save();
@@ -321,7 +323,7 @@ async function affecterTestAuCandidat(req, res) {
 async function PassTest(req, res) {
 	try {
 		const { idTest, reponses, idCandidat } = req.body;
-		console.log(req.body);
+		// console.log(req.body);
 		// Chercher si le candidat a déjà passé le test et mettre à jour ou créer le passage de test
 		let passage = await PassageTest.findOne({
 			idTest: idTest,
@@ -372,7 +374,7 @@ async function PassTest(req, res) {
 			{ $set: { score: score } },
 			{ new: true }
 		);
-
+		console.log("Updated Document:", result);
 		res.status(200).json({ message: "Added successfully", test: result });
 	} catch (error) {
 		console.log("error", error.message);
@@ -382,8 +384,8 @@ async function PassTest(req, res) {
 
 async function getTestPasserbyCandidat(req, res) {
 	try {
-		console.log("getTestPasserbyCandidat :  ", req.query);
-		const { idCandidat } = req.query; // Utilisation de req.query pour récupérer les paramètres de la requête GET
+		console.log("getTestPasserbyCandidat  ");
+		const { idCandidat } = req.query;
 		const tests = await PassageTest.find({ idCandidat: idCandidat });
 		resultat = [];
 		for (let i = 0; i < tests.length; i++) {

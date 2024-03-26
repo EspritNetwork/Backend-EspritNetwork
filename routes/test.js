@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const testController = require("../controllers/testController");
+const testResultsController = require("../controllers/testResultsController");
 
 router.post("/add", testController.addTest);
 router.post("/addAutomatic", testController.addAutomaticTest);
@@ -14,5 +15,11 @@ router.post("/AffecterTestToCondidat", testController.affecterTestAuCandidat);
 router.get("/getTestPasserbyCandidat", testController.getTestPasserbyCandidat);
 router.put("/passTest", testController.PassTest);
 router.get("/getbyCandidat", testController.getbyCandidat);
+//resultat de test
+router.get("/getResultTests", testResultsController.getAllResultsTests);
+//router.get(
+// 	"/getResultTestsByOffre",
+// 	testResultsController.getResultTestsByOffre
+// );
 
 module.exports = router;
