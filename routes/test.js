@@ -17,6 +17,8 @@ router.put("/passTest", testController.PassTest);
 router.get("/getbyCandidat", testController.getbyCandidat);
 //resultat de test
 router.get("/getResultTests", testResultsController.getAllResultsTests);
+
+router.get("/getCandidatRapport", testResultsController.rapportCandidat);
 //router.get(
 // 	"/getResultTestsByOffre",
 // 	testResultsController.getResultTestsByOffre

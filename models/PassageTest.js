@@ -15,10 +15,13 @@ const PassageTest = new Schema({
 	note: {
 		type: Number,
 	},
-	date: {
+	passed_at: {
 		type: Date,
 	},
 	invited_at: {
+		type: Date,
+	},
+	dateFin: {
 		type: Date,
 	},
 	response: {

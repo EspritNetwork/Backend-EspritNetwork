@@ -1,6 +1,9 @@
 const Test = require("../models/test");
 const Offre = require("../models/offre");
+const User = require("../models/user");
 const PassageTest = require("../models/PassageTest");
+
+const Condidacy = require("../models/condidacy");
 
 async function getResultTestsByOffre(req, res) {
 	try {
@@ -77,7 +80,122 @@ async function getAllResultsTests(req, res) {
 	}
 }
 
+async function rapportCandidat(req, res) {
+	try {
+		const { idCandidat, idOffre } = req.query;
+
+		const data = await PassageTest.aggregate([
+			{
+				$match: {
+					idCandidat: idCandidat,
+					idOffre: idOffre,
+				},
+			},
+			{
+				$lookup: {
+					from: "tests",
+					let: { testId: { $toObjectId: "$idTest" } },
+					pipeline: [
+						{ $match: { $expr: { $eq: ["$_id", "$$testId"] } } },
+						{
+							$project: {
+								_id: 1,
+								technologie: 1,
+								questions: 1,
+								description: 1,
+							},
+						},
+					],
+					as: "test",
+				},
+			},
+			{
+				$lookup: {
+					from: "users",
+					let: { userId: { $toObjectId: "$idCandidat" } },
+					pipeline: [
+						{ $match: { $expr: { $eq: ["$_id", "$$userId"] } } },
+						{ $project: { _id: 0, name: 1, email: 1 } },
+					],
+					as: "candidat",
+				},
+			},
+			{
+				$lookup: {
+					from: "offres",
+					let: { offreId: { $toObjectId: "$idOffre" } },
+					pipeline: [
+						{ $match: { $expr: { $eq: ["$_id", "$$offreId"] } } },
+						{
+							$project: {
+								titre: 1,
+								description: 1,
+								typeoffre: 1,
+								salaire: 1,
+								typecontrat: 1,
+								competence: 1,
+								langue: 1,
+								created_at: {
+									$dateToString: { format: "%Y-%m-%d", date: "$created_at" },
+								},
+							},
+						},
+					],
+					as: "offre",
+				},
+			},
+
+			// Convert candidat, test, and offre arrays to objects
+			{
+				$addFields: {
+					candidat: { $arrayElemAt: ["$candidat", 0] },
+					test: { $arrayElemAt: ["$test", 0] },
+					offre: { $arrayElemAt: ["$offre", 0] },
+				},
+			},
+
+			// Group by candidat and offre and push tests into an array
+			{
+				$group: {
+					_id: {
+						candidat: "$candidat",
+						offre: "$offre",
+					},
+					tests: { $push: "$test" },
+					passagetests: { $push: "$$ROOT" },
+				},
+			},
+			// Project to reshape the document
+			{
+				$project: {
+					_id: 0,
+					candidat: "$_id.candidat",
+					offre: "$_id.offre",
+					tests: 1,
+					passagetests: 1,
+				},
+			},
+		]);
+
+		console.log("tttt:", data);
+		console.log("ddd:", data[0].passagetests);
+		console.log("idCandidat:", idCandidat);
+		console.log("idOffre:", idOffre);
+
+		const candidatures = await Condidacy.find();
+		const candidature = candidatures.filter(
+			(c) => c.user.toString() === idCandidat && c.offre.toString() === idOffre
+		);
+		console.log("candidacy:", candidature);
+
+		res.status(200).json({data, candidature});
+	} catch (err) {
+		res.status(400).json({ error: err.message });
+	}
+}
+
 module.exports = {
 	getAllResultsTests,
 	getResultTestsByOffre,
+	rapportCandidat,
 };

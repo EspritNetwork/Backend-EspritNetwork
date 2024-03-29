@@ -3,6 +3,8 @@ const Offre = require("../models/offre");
 const Question = require("../models/question");
 const PassageTest = require("../models/PassageTest");
 const { response } = require("express");
+const { SendMAilPourPassTest } = require("./interviewController");
+const User = require("../models/user");
 async function addTest(req, res) {
 	try {
 		const test = new Test(req.body);
@@ -137,7 +139,9 @@ async function getAllTests(req, res) {
 
 async function getTestById(req, res) {
 	try {
+		console.log("getTestById :");
 		const test = await Test.findById(req.params.id);
+		console.log(test);
 		res.status(200).json(test);
 	} catch (err) {
 		console.log("err", err.message);
@@ -193,11 +197,9 @@ async function getbyCandidat(req, res) {
 
 async function affecterTestAuCandidat(req, res) {
 	try {
-		console.log(req.body);
+		console.log("affecterTestAuCandidat");
 		const { idTest, idCandidat } = req.body;
 		let data = req.body;
-
-		// Vérifier si le test a déjà été envoyé au candidat
 		const exist = await PassageTest.findOne({ idTest, idCandidat });
 		if (exist) {
 			return res
@@ -205,19 +207,26 @@ async function affecterTestAuCandidat(req, res) {
 				.json({ message: "Le test a déjà été envoyé au candidat." });
 		}
 
-		// Vérifier si un candidat a été sélectionné
 		if (!idCandidat) {
 			return res
 				.status(400)
 				.json({ message: "Veuillez sélectionner un candidat." });
-		}
-		const invited_at = new Date();
-		// Créer un nouvel enregistrement pour affecter le test au candidat
-		const newPassageTest = new PassageTest({ ...data, invited_at: new Date() });
+		} // Formater la date (dd-mm-yyyy)
+
+		let invited_at = new Date();
+		invited_at = `${invited_at.getFullYear()}-${String(
+			invited_at.getMonth() + 1
+		).padStart(2, "0")}-${String(invited_at.getDate()).padStart(2, "0")}`;
+		console.log("invited_at", invited_at);
+
+		const newPassageTest = new PassageTest({ ...data, invited_at: invited_at });
 
 		// Sauvegarder le nouvel enregistrement dans la base de données
 		await newPassageTest.save();
 		console.log(newPassageTest);
+		/***Envoyer un mail au candidat pour le informer de ce test*/
+		const candidat = await User.findById(idCandidat);
+		SendMAilPourPassTest(candidat);
 		// Répondre avec succès
 		return res.status(201).json({
 			message: "Le test a été envoyé avec succès.",
@@ -322,8 +331,9 @@ async function affecterTestAuCandidat(req, res) {
 // }
 async function PassTest(req, res) {
 	try {
+		console.log(PassTest);
 		const { idTest, reponses, idCandidat } = req.body;
-		// console.log(req.body);
+
 		// Chercher si le candidat a déjà passé le test et mettre à jour ou créer le passage de test
 		let passage = await PassageTest.findOne({
 			idTest: idTest,

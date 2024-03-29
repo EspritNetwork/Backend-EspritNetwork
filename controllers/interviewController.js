@@ -1,7 +1,13 @@
 const Interview = require("../models/interview");
 const { authorize, createSpace } = require("../meet");
-
-async function PlanifierEntretien(req, res) {
+const { get } = require("mongoose");
+const User = require("../models/user");
+const Condidacy = require("../models/condidacy");
+const nodemailer = require("nodemailer");
+const Offre = require("../models/offre");
+const GMAIL_USER = "orangedigitalcentretest@gmail.com";
+const GMAIL_PSW = "ylwvzbilzvcceuoa";
+async function PlanifierEntretienEnLigne(req, res) {
 	try {
 		const { date, idCandidat, idOffre } = req.body;
 		// Authorize and create meeting space
@@ -11,8 +17,77 @@ async function PlanifierEntretien(req, res) {
 		// Save meeting link to the database
 		const data = { date, idCandidat, idOffre, link };
 		console.log("data ", data);
+
 		const interview = new Interview(data);
 		await interview.save();
+
+		//***** Alert  with mail to the candidat */
+		//find by id le user
+		const candidat = await User.findById(idCandidat);
+		const offre = await Offre.findById(idOffre);
+		console.log("offre", offre);
+		console.log("candidat", candidat.email);
+		// const email = "onesrhaime28@gmail.com";
+		const email = candidat.email;
+		console.log("email", email);
+
+		const transporter = nodemailer.createTransport({
+			service: "gmail",
+			auth: {
+				user: GMAIL_USER,
+				pass: GMAIL_PSW,
+			},
+		});
+		let info = await transporter.sendMail({
+			from: GMAIL_USER,
+			to: email,
+			subject: `Invitation pour un entretien`,
+			html: `		<body>
+		<table width="100%">
+			<tr>
+				<td style="padding: 20px 0; background-color: #000000">
+					<a
+						target="_blank"
+						style="
+							text-decoration: none;
+							color: #fff;
+							display: flex;
+							align-items: start;
+							justify-content: start;
+						"
+					>
+						<img src="https://i.postimg.cc/qR5fh0QH/logo-network.png"
+						width="70px" height="70px" alt="Esprit Network auto" style="display:
+						block; border: 0 ; padding: 10px;" />
+						<h1>Esprit Network</h1>
+					</a>
+				</td>
+			</tr>
+			<tr style="background: #fff">
+				<td style="padding: 20px">
+					<p style="margin: 2; font-size: 14px; color: #000000">
+						Bonjour ${candidat.name},<br /><br />
+						Suite à votre candidature por l'offre
+						<strong> ${offre.titre} </strong>, vous avez été présélectionné pour
+						passer un entretien en ligne.<br />
+						Veuillez
+						<a href="${link}" style="color: #2cb543; text-decoration: underline"
+							>cliquer ici pour rejoindre le meeting</a
+						>. Le <strong style="color: #cf0000"> ${interview.date}</strong>.
+						<br />	<br />
+						Bonne chance!<br /><br />
+						L’équipe Esprit Network
+					</p>
+				</td>
+			</tr>
+		</table>
+	               </body>`,
+		});
+		// if (info) {
+		// 	console.log(info);
+		// } else {
+		// 	console.log("err");
+		// }
 		res
 			.status(201)
 			.json({ message: "interview added successfully", interview });
@@ -21,6 +96,316 @@ async function PlanifierEntretien(req, res) {
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 }
+async function PlanifierEntretienAubureau(req, res) {
+	console.log("PlanifierEntretienAubureau");
+	try {
+		const { date, idCandidat, idOffre } = req.body;
+
+		const link = "*********";
+
+		// Save meeting link to the database
+		const data = { date, idCandidat, idOffre, link };
+		console.log("data ", data);
+		const interview = new Interview(data);
+		await interview.save();
+		console.log("interview", interview);
+		//***** Alert  with mail to the candidat */
+		const candidat = await User.findById(idCandidat);
+		const offre = await Offre.findById(idOffre);
+		console.log("offre", offre);
+		console.log("candidat", candidat.email);
+		// const email = "onesrhaime28@gmail.com";
+		const email = candidat.email;
+		console.log("email", email);
+		const transporter = nodemailer.createTransport({
+			service: "gmail",
+			auth: {
+				user: GMAIL_USER,
+				pass: GMAIL_PSW,
+			},
+		});
+		let info = await transporter.sendMail({
+			from: GMAIL_USER,
+			to: email,
+			subject: "Invitation pour un entretien",
+			html: `		<body>
+		<table width="100%">
+			<tr>
+				<td style="padding: 20px 0; background-color: #000000">
+					<a
+						target="_blank"
+						style="
+							text-decoration: none;
+							color: #fff;
+							display: flex;
+							align-items: start;
+							justify-content: start;
+						"
+					>
+						<img src="https://i.postimg.cc/qR5fh0QH/logo-network.png"
+						width="70px" height="70px" alt="Esprit Network auto" style="display:
+						block; border: 0 ; padding: 10px;" />
+						<h1>Esprit Network</h1>
+					</a>
+				</td>
+			</tr>
+			<tr style="background: #fff">
+				<td style="padding: 20px">
+					<p style="margin: 2; font-size: 14px; color: #000000">
+						  Bonjour ${candidat.name},<br /><br />
+                    Suite à votre candidature pour l'offre <strong>${offre.titre}</strong>, vous avez été présélectionné pour passer un entretien dans nos bureaux.<br /> 
+                    Nous restons à votre disposition pour toute information complémentaire. <br/>N'hésitez pas à nous contacter par email à l'adresse <a href="mailto:contact@espritnetwork.com" style="color: #2cb543; text-decoration: underline;">contact@espritnetwork.com</a> ou par téléphone au +123456789.<br /><br />
+                    Cordialement,<br />
+                    L’équipe Esprit Network
+					</p>
+				</td>
+			</tr>
+		</table>
+	</body>`,
+		});
+		if (info) {
+			console.log(info);
+		} else {
+			console.log("err");
+		}
+		res
+			.status(201)
+			.json({ message: "interview added successfully", interview });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+}
+async function EnovyerMaildAcceptation(req, res) {
+	try {
+		const { idCandidat, idOffre } = req.body;
+		console.log("idCandidat", idCandidat);
+		console.log("idOffre", idOffre);
+		const candidat = await User.findById(idCandidat);
+		const offre = await Offre.findById(idOffre);
+		const candidature = await Condidacy.findOneAndUpdate(
+			{ user: idCandidat, offre: idOffre },
+			{ $set: { status: "accepté" } }, // Mise à jour du statut de la candidature
+			{ new: true } // Pour obtenir le document mis à jour
+		);
+		console.log("candidature", candidature);
+
+		console.log("offre", offre);
+		console.log("candidat", candidat.email);
+
+		//***** Envoi d'un e-mail au candidat */
+
+		const email = candidat.email;
+		console.log("email", email);
+
+		const transporter = nodemailer.createTransport({
+			service: "gmail",
+			auth: {
+				user: GMAIL_USER,
+				pass: GMAIL_PSW,
+			},
+		});
+		let info = await transporter.sendMail({
+			from: GMAIL_USER,
+			to: email,
+			subject: `Statut de votre candidature pour l'offre ${offre.titre}`,
+			html: `		<body>
+    <table width="100%">
+        <tr>
+            <td style="padding: 20px 0; background-color: #000000">
+                <a
+                    target="_blank"
+                    style="
+                        text-decoration: none;
+                        color: #fff;
+                        display: flex;
+                        align-items: start;
+                        justify-content: start;
+                    "
+                >
+                    <img src="https://i.postimg.cc/qR5fh0QH/logo-network.png"
+                    width="70px" height="70px" alt="Esprit Network auto" style="display:
+                    block; border: 0 ; padding: 10px;" />
+                    <h1>Esprit Network</h1>
+                </a>
+            </td>
+        </tr>
+        <tr style="background: #fff">
+            <td style="padding: 20px">
+                <p style="margin: 2; font-size: 14px; color: #000000">
+                    Bonjour ${candidat.name},<br /><br />
+					Nous sommes ravis de vous informer que votre candidature pour le poste de <strong> ${offre.titre} </strong>a été retenue ! Nous sommes convaincus que vous avez les compétences et l'expérience nécessaires pour contribuer à notre équipe et nous sommes impatients de vous rencontrer en personne.<br /><br />
+                    N'hésitez pas à nous contacter pour toute information complémentaire ou toute clarification supplémentaire.  Nous sommes là pour vous aider dans cette nouvelle étape de votre carrière. <br/> <br />
+                    Nous avons hâte de vous accueillir dans notre équipe et de travailler ensemble pour atteindre nos objectifs communs. <br /><br /> <br />
+                   Cordialement, <br /><br />
+                    L’équipe Esprit Network
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>`,
+		});
+		// if (info) {
+		// 	console.log(info);
+		// } else {
+		// 	console.log("err");
+		// }
+		res.status(201).json({ message: "statut de candidature à ete modifié " });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+}
+async function EnovyerMailRefuse(req, res) {
+	try {
+		const { idCandidat, idOffre } = req.body;
+		console.log("idCandidat", idCandidat);
+		console.log("idOffre", idOffre);
+		const candidat = await User.findById(idCandidat);
+		const offre = await Offre.findById(idOffre);
+		const candidature = await Condidacy.findOneAndUpdate(
+			{ user: idCandidat, offre: idOffre },
+			{ $set: { status: "accepté" } }, // Mise à jour du statut de la candidature
+			{ new: true } // Pour obtenir le document mis à jour
+		);
+		console.log("candidature", candidature);
+
+		console.log("offre", offre);
+		console.log("candidat", candidat.email);
+
+		//***** Envoi d'un e-mail au candidat */
+
+		const email = candidat.email;
+		console.log("email", email);
+		const transporter = nodemailer.createTransport({
+			service: "gmail",
+			auth: {
+				user: GMAIL_USER,
+				pass: GMAIL_PSW,
+			},
+		});
+		let info = await transporter.sendMail({
+			from: GMAIL_USER,
+			to: email,
+			subject: `Statut de votre candidature pour l'offre ${offre.titre}`,
+			html: `		<body>
+		<table width="100%">
+			<tr>
+				<td style="padding: 20px 0; background-color: #000000">
+					<a
+						target="_blank"
+						style="
+							text-decoration: none;
+							color: #fff;
+							display: flex;
+							align-items: start;
+							justify-content: start;
+						"
+					>
+						<img src="https://i.postimg.cc/qR5fh0QH/logo-network.png"
+						width="70px" height="70px" alt="Esprit Network auto" style="display:
+						block; border: 0 ; padding: 10px;" />
+						<h1>Esprit Network</h1>
+					</a>
+				</td>
+			</tr>
+			<tr style="background: #fff">
+				<td style="padding: 20px">
+					 <p style="margin: 2; font-size: 14px; color: #000000;">
+                    Bonjour ${candidat.name},<br /><br />
+                    Nous regrettons de vous informer que votre candidature pour le poste de  <strong>${offre.titre} </strong> n'a pas été retenue.
+					 <br/> Nous vous remercions pour l'intérêt que vous avez porté à notre entreprise et pour le temps que vous avez consacré à postuler pour ce poste.
+					 <br /><br />
+                    N'hésitez pas à nous contacter pour toute information complémentaire ou toute clarification supplémentaire.	<br /><br />
+                    Nous vous souhaitons beaucoup de succès dans vos recherches futures et nous vous remercions encore une fois pour votre candidature.<br /><br />
+                    Cordialement,<br />
+                    L’équipe Esprit Network
+                </p>
+				</td>
+			</tr>
+		</table>
+	</body>`,
+		});
+		// if (info) {
+		// 	console.log(info);
+		// } else {
+		// 	console.log("err");
+		// }
+		res.status(201).json({ message: "statut de candidature à ete modifié " });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+}
+
+async function SendMAilPourPassTest(candidat) {
+	try {
+		console.log("candidat", candidat);
+		const transporter = nodemailer.createTransport({
+			service: "gmail",
+			auth: {
+				user: GMAIL_USER,
+				pass: GMAIL_PSW,
+			},
+		});
+		let info = await transporter.sendMail({
+			from: GMAIL_USER,
+			to: candidat.email,
+			subject: `Invitation pour passer un test technique`,
+			html: `	<body>
+		 <table width="100%">
+			<tr>
+				<td style="padding: 20px 0; background-color: #000000">
+					<a
+						target="_blank"
+						style="
+							text-decoration: none;
+							color: #fff;
+							display: flex;
+							align-items: start;
+							justify-content: start;
+						"
+					>
+						<img src="https://i.postimg.cc/qR5fh0QH/logo-network.png"
+						width="70px" height="70px" alt="Esprit Network auto" style="display:
+						block; border: 0 ; padding: 10px;" />
+						<h1>Esprit Network</h1>
+					</a>
+				</td>
+			</tr>
+			<tr style="background: #fff">
+				<td style="padding: 20px">
+					<p style="margin: 2; font-size: 14px; color: #000000">
+						Bonjour ${candidat.name},<br /><br />
+						Suite à votre candidature vous avez été présélectionné pour
+						passer un <strong>Test Technique  en ligne</strong>.<br />
+						Veuillez connecter à votre espace candidat pour passer le test. <br />
+						Le test est composé de questions à choix unique  , pour plus d'information consulter votre espace  dans la rebrique <strong>Evaluation</strong> <br />
+						<br />	<br />
+						Bonne chance!<br /><br />
+						L’équipe Esprit Network
+					</p>
+				</td>
+			</tr>
+		</table>
+	               </body>`,
+		});
+		if (info) {
+			console.log(info);
+			return true;
+		} else {
+			console.log("err");
+			return false;
+		}
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+}
 module.exports = {
-	PlanifierEntretien,
+	PlanifierEntretienEnLigne,
+	PlanifierEntretienAubureau,
+	EnovyerMailRefuse,
+	EnovyerMaildAcceptation,
+	SendMAilPourPassTest,
 };
