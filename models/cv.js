@@ -3,27 +3,44 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const CvSchema = new Schema({
-    biographie: {
-        type: String,
-    },
-    experience: {
-        type: String,
-    },
-    competence: {
-        type: String,
-    },
-    langue: {
-        type: String,
-    },
-    projets: {
-        type: String,
-    },
-    education: {
-        type: String,
-    },
-    certifications: {
-        type: String,
-    },
+    contact: {
+        nom: {
+          type: String
+        },
+        prenom: {
+          type: String
+        },
+        email: {
+          type: String
+        },
+        telephone: {
+          type: String
+        },
+        adresse: {
+          type: String
+        },
+        lienGit: String,
+        lienLinkedIn: String,
+        imageResume: String,
+        titreProfil: String
+      },
+      biographie: String,
+      parcoursProfessionnels: [{
+        poste: String,
+        dateDebut: Date,
+        dateFin: Date,
+        entreprise: String,
+        description: String
+      }],
+      parcoursAcademiques: [{
+        diplome: String,
+        etablissement: String,
+        dateDebut: Date,
+        dateFin: Date
+      }],
+      competences: [String],
+      langues: [String],
+      
     // here we represente forign key user 
     user: {
         type: Schema.Types.ObjectId,
@@ -32,3 +49,6 @@ const CvSchema = new Schema({
 });
 
 module.exports = mongoose.model("Cv", CvSchema);
+
+
+

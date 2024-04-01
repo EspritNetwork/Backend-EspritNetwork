@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const collectionController = require("../controller/collectionController");
+const collectionController = require("../controllers/collectionController");
 
 router.get('/getall', collectionController.getAllCollections);
 router.post('/add', collectionController.addCollection);
@@ -10,6 +10,7 @@ router.put('/update/:id', collectionController.updatedcollection);
 router.post('/assign/:collectionId/:userId', collectionController.assignUserToCollection);
 router.delete('/remove/:collectionId/:userId', collectionController.removeUserFromCollection);
 router.get('/getusers/:id', collectionController.getUsersByCollectionId);
+router.get('/user/checkAssigned/:userId', collectionController.checkUserAssigned);
 
 
 

@@ -1,68 +1,82 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
-const Schema = mongoose.Schema;
-
-//All the champs are optional
-
-const userSchema = new Schema({
-    nom: {
-        type: String,
-    },
-    prenom: {
-        type: String,
-    },
-    specialite: {
-        type: String,
-    },
-    cin: {
-        type: Number,
+const userSchema = mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
     },
     email: {
-        type: String,
+      type: String,
+      required: true,
+      unique: true,
+    },
+    googleId: {
+      type: String,
+      required: false,
+    },
+    secret: {
+      type: String,
+      required: false,
+    },
+    pic: {
+      type: String,
+      required: false,
     },
     password: {
-        type: String,
+      type: String,
     },
-    image: {
-        type: String,
-    },
-    adresse: {
-        type: String,
-    },
-    téléphone: {
-        type: Number,
-    },
-    cv: {
-        type: String,
-    },
-    created_at: {
-        type: Date,
-        default: Date.now,
-    },
-    updated_at: {
-        type: Date,
-        default: Date.now,
-    },
-    status: {
-        type: Boolean,
-        default: false,
+    confirmPassword: {
+      type: String,
     },
     role: {
-        type: String,
-        enum: ['student', 'alumni', 'esprit_staff', 'teacher', 'company'],
+      type: String,
+      enum: ["admin", "user", "staff"],
+      default: "user",
+      required: true,
     },
-    nameC: {
-        type: String,
+    token: {
+      type: String,
+      required: false,
+    },
+    isAdmin: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    verified: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    verifyToken: {
+      type: String,
+      required: false,
     },
     adresseC: {
         type: String,
     },
-    descriptionC: {
-        type: String,
-    },
-    logoC: {
-        type: String,
-    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Login
+userSchema.methods.matchPassword = async function (enterPassword) {
+  return await bcrypt.compare(enterPassword, this.password);
+};
+
+// Register
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    next();
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
-module.exports = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+
+module.exports = User;

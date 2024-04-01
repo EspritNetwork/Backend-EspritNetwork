@@ -28,15 +28,20 @@ const OffreSchema = new Schema({
     },
     langue: {
         type: String,
-        required: true,
     },
     experience: {
         type: String,
-        required: true,
     },
+    statusOffre: {
+        type: Boolean,
+        default:true
+    },
+    dateExpiration:{
+        type: Date
+    },
+    // here we represente forign key test
     created_at: {
         type: Date,
-        default: Date.now,
     },
     updated_at: {
         type: Date,

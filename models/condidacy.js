@@ -9,6 +9,7 @@ const CondidacySchema = new Schema({
     },
     status: {
         type: String,
+        default: "en attend",
     },
     affiliation: {
         type: String,
@@ -16,8 +17,10 @@ const CondidacySchema = new Schema({
     document: {
         type: String,
     },
-    
     specialite: {
+        type: String,
+    },
+    option:{
         type: String,
     },
     anneediplome: {
