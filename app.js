@@ -8,20 +8,26 @@ const dotenv = require("dotenv");
 const googleAuth = require("./routes/index");
 const passport = require("passport");
 const session = require("express-session");
-const multer = require("multer");
-const fs = require("fs");
+const nodemailer = require('nodemailer');
+
 // Connect to database
 mongoose
-	.connect(config.url)
-	.then(() => console.log("Connexion à MongoDB réussie !"))
-	.catch(() => console.log("Connexion à MongoDB échouée !"));
+  .connect(config.url)
+  .then(() => console.log("Connexion à MongoDB réussie !"))
+  .catch(() => console.log("Connexion à MongoDB échouée !"));
 
+
+  
 // Create an instance of the app
 const app = express();
 
+
+// Configuration de la limite de taille maximale pour les données de requête
+app.use(bodyparser.json({ limit: '10500mb' }));
+app.use(bodyparser.urlencoded({ extended: true, limit: '10500mb' }));
+
 // Enable CORS middleware
 app.use(cors());
-app.use(bodyparser.json());
 const testRouter = require("./routes/test");
 const questionRouter = require("./routes/question");
 const cvRouter = require("./routes/cv");
@@ -30,80 +36,86 @@ const condidacyRouter = require("./routes/condidacy");
 const affiliationRouter = require("./routes/affiliation");
 const competenceRouter = require("./routes/competence");
 const departementRouter = require("./routes/departement");
-const uploadRouter = require("./routes/uploadRouter");
+const uploadRouter = require('./routes/uploadRouter');
 const userRouter = require("./routes/UserRoutes");
 const domaineRouter = require("./routes/domaine");
-const interviewRouter = require("./routes/interview");
-const antiTricherie = require("./models/antiTricherie");
+const collectionRouter = require("./routes/collection");
+const vueRouter = require("./routes/vue");
+const meetRouter = require("./routes/meet");
+
+
 
 app.use(
-	session({
-		secret: "secret",
-		resave: false,
-		saveUninitialized: false,
-	})
+  session({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: false,
+  })
 );
+
+
+
 
 app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
 require("./auth/google-auth")(passport);
 
 app.use("/", googleAuth);
-/**upload  */
-const upload = multer({ dest: "uploads/" }); // Dossier de destination pour enregistrer les fichiers
-
-let videoCounter = 0; // Compteur pour numéroter les vidéos
-
-app.post("/upload-video", upload.single("video"), async (req, res) => {
-	try {
-		// Chemin d'accès au dossier de destination
-		const destinationFolder =
-			"G:/Pidev-4Twin/Frontend-Test/Frontend-EspritNetwork/src/assets/video";
-
-		// Vérifie si le dossier de destination existe, sinon le crée
-		if (!fs.existsSync(destinationFolder)) {
-			fs.mkdirSync(destinationFolder, { recursive: true });
-		}
-
-		// Déplace le fichier vidéo depuis le dossier temporaire vers le dossier de destination
-		const oldPath = req.file.path;
-		videoCounter = videoCounter + 1;
-		const newPath = `${destinationFolder}/video${videoCounter}.webm`; // Renomme le fichier avec un nom unique
-		fs.renameSync(oldPath, newPath);
-		// try {
-		// 	log;
-		// 	await AntiTricherie.findOneAndUpdate(
-		// 		{ idCandidat: req.body.idCandidat, idTest: req.body.idTest },
-		// 		{ vedioNavigateur: newPath }
-		// 	);
-		// } catch (error) {
-		// 	console.log("antichhh", error);
-		// }
-		console.log("Video saved successfully at:", newPath);
-		res.send("Video uploaded and saved successfully");
-
-		videoCounter++; // Incrémente le compteur pour la prochaine vidéo
-	} catch (error) {
-		console.error("Error saving video:", error);
-		res.status(500).send("Internal Server Error");
-	}
-});
 
 // API
 app.use("/api/users", userRouter);
 
-app.use("/test", testRouter);
+app.use("/test", testRouter); 
 app.use("/question", questionRouter);
-app.use("/cv", cvRouter);
-app.use("/offre", offreRouter);
+app.use("/cv", cvRouter); 
+app.use("/offre", offreRouter); 
 app.use("/condidacy", condidacyRouter);
 app.use("/affiliation", affiliationRouter);
 app.use("/competence", competenceRouter);
-app.use("/domaine", domaineRouter);
 app.use("/departement", departementRouter);
-app.use("/upload", uploadRouter);
+app.use('/upload', uploadRouter);
 app.use("/domaine", domaineRouter);
-app.use("/interview", interviewRouter);
+app.use("/collection", collectionRouter );
+app.use("/vue", vueRouter );
+app.use("/interview", meetRouter);
+
+
+
+//////////////////////**********mailing*****************///////////////////////////////////////////////////////////////
+const transporter = nodemailer.createTransport({
+	host: "smtp.gmail.com",
+	port: 465,
+	secure: true,
+	auth: {
+	  user: 'azizmarabou235@gmail.com',
+	  pass: 'qbyi qkao xoyd ihkj',
+	},
+  });
+
+  app.post('/send-email', (req, res) => {
+    const { recipient, subject, html } = req.body;
+  
+    const mailOptions = {
+      from: 'azizmarabou235@gmail.com',//baad nbadloha b user.session.email
+      to: recipient,
+      subject: subject,
+      html: html,
+    };
+  
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Erreur lors de l\'envoi de l\'e-mail:', error);
+        res.status(500).send('Erreur lors de l\'envoi de l\'e-mail');
+      } else {
+        console.log('E-mail envoyé:', info.response);
+        res.status(200).send('E-mail envoyé avec succès');
+      }
+    });
+  });
+  ////////////////////////////////////////***meeting****/////////////////////////////////////////////////////////////
+
+
+
 
 dotenv.config();
 const PORT = process.env.PORT || 3000;

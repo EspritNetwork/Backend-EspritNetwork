@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-
 const domaineController = require("../controllers/domaineController");
 
 router.post("/add", domaineController.addDomaine);
