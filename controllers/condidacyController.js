@@ -15,6 +15,16 @@ async function addCondidacy(req, res) {
 }
 
 
+async function getCondidacyByIdOffre(req, res) {
+  try {
+    const offreId = req.params.id;
+    const condidacies = await Condidacy.find({ offre: offreId }).populate('user');
+    res.status(200).json(condidacies);
+  } catch (error) {
+    console.error('Error fetching condidacies by offer ID:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
 
 async function getpdfcondiacy(req, res) {
   try {
@@ -101,5 +111,6 @@ module.exports = {
   getCondidacyById,
   deleteCondidacy,
   updateCondidacy,
-  getCondidcayByIdUser
+  getCondidcayByIdUser,
+  getCondidacyByIdOffre
 };

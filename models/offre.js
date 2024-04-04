@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Condidacy = require('../models/condidacy');
 
 const Schema = mongoose.Schema;
 
@@ -53,5 +54,19 @@ const OffreSchema = new Schema({
         ref: 'User',
     },
 });
+
+//on delete cascade pour le condidature
+OffreSchema.pre('findOneAndDelete', async function (next) {
+    try {
+      const offreId = this.getQuery()._id;
+      await Condidacy.deleteMany({ offre: offreId });
+      console.log(`Deleted Condicacy documents associated with Offre: ${offreId}`);
+      next();
+    } catch (err) {
+      console.error('Error deleting associated Condicacy documents:', err);
+      next(err); // Pass error to the next middleware
+    }
+  });
+  
 
 module.exports = mongoose.model("Offre", OffreSchema);

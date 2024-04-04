@@ -1,4 +1,5 @@
 const Offre = require("../models/offre");
+const cron = require('node-cron');
 
 async function addOffre(req, res) {
   try {
@@ -92,21 +93,27 @@ async function RéutiliserOffer(req, res) {
       return res.status(404).json({ message: "Offre not found" });
     }
 
-    if (existingOffre.dateExpiration < Date.now()) {
-      return res.status(404).json({ message: "La date d'expiration doit être supérieure à la date actuelle !" });
-    }
+    const newOffre = new Offre({
+      titre: existingOffre.titre,
+      typeoffre: existingOffre.typeoffre,
+      description: existingOffre.description,
+      competence: existingOffre.competence,
+      typecontrat: existingOffre.typecontrat,
+      salaire: existingOffre.salaire,
+      langue: existingOffre.langue,
+      experience: existingOffre.experience,
+      created_at: new Date(), 
+      user: existingOffre.user, 
+    });
 
-    const updatedOffre = await Offre.findByIdAndUpdate(
-      req.params.id,
-      { $set: { statusOffre: true, created_at: Date.now() } },
-      { new: true }
-    );
+    await newOffre.save();
 
-    res.status(200).json({ message: "Offre status updated successfully", offre: updatedOffre });
+    res.status(200).json({ message: "Offre status reutiliser successfully !", offre: newOffre });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 }
+
 
 
 const getArchivesByIdUser = async (req, res) => {
@@ -154,6 +161,9 @@ async function updateOffre(req, res) {
   }
 }
 
+
+
+
 async function supprimerOffre(req, res) {
   try {
     const deletedOffre = await Offre.findByIdAndDelete(req.params.id);
@@ -176,17 +186,59 @@ async function updateOfferStatus() {
       offer.statusOffre = false;
       await offer.save();
     }
-    console.log('Offer statuses updated successfully.');
   } catch (error) {
     console.error('Error updating offer statuses:', error);
   }
 }
 
-// Initial execution
-updateOfferStatus();
+// cette fonction s"execute chaque minute 
+cron.schedule('* * * * *', async () => {
+  try {
+    // Appeler la fonction d'archivage
+    await updateOfferStatus();
+  } catch (error) {
+    console.error('Erreur lors de l\'archivage des offres expirées :', error);
+  }
+});
 
-// Schedule execution every 24 hours
-setInterval(updateOfferStatus, 24 * 60 * 60 * 1000); // 24 hours interval
+
+
+async function getStatistiquesOffresParCompetence(req, res) {
+  try {
+    // Récupérer toutes les offres
+    const offres = await Offre.find();
+
+    // Initialiser un objet pour stocker le nombre total de clics pour chaque compétence
+    const statistiques = {};
+
+    // Parcourir chaque offre
+    for (const offre of offres) {
+      // Récupérer les compétences de l'offre
+      const competences = offre.competence.split(',');
+
+      // Mettre à jour les statistiques pour chaque compétence
+      competences.forEach(competence => {
+        // Vérifier si cette compétence existe déjà dans les statistiques
+        if (statistiques.hasOwnProperty(competence)) {
+          // Si oui, incrémentez le nombre de comptes pour cette compétence
+          statistiques[competence] += 1;
+        } else {
+          // Sinon, initialisez le nombre de comptes pour cette compétence à 1
+          statistiques[competence] = 1;
+        }
+      });
+    }
+
+    // Convertir les statistiques en tableau pour l'affichage
+    const statistiquesArray = Object.entries(statistiques).map(([competence, count]) => ({ competence, count }));
+
+    res.status(200).json(statistiquesArray);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
 
 
 
@@ -199,5 +251,6 @@ module.exports = {
   updateOffre,
   getArchivesByIdUser,
   supprimerOffre,
-  RéutiliserOffer
+  RéutiliserOffer,
+  getStatistiquesOffresParCompetence 
 };

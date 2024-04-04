@@ -77,22 +77,22 @@ async function getAllCollections(req, res) {
       if (!collection || !user) {
         return res.status(404).json({ message: 'Collection or user not found' });
       }
-      const userExists = await Collection.findOne({ _id: collectionId, users: userId });
-
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists in collection' });
-    }
-
+  
+      const userExists = collection.users.some(u => u._id.equals(user._id));
+  
+      if (userExists) {
+        return res.status(400).json({ message: 'Ce candidat est dejà affecté à cette collection' });
+      }
+  
       collection.users.push(user);
       await collection.save();
   
-      res.json({ message: 'User added to collection successfully',collection });
+      res.json({ message: 'User added to collection successfully', collection });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
-
   async function removeUserFromCollection(req, res) {
     const { collectionId, userId } = req.params;
     try {
@@ -115,6 +115,24 @@ async function getAllCollections(req, res) {
   }
 
 
+  async function checkUserAssigned(req, res) {
+    const { userId } = req.params;
+  
+    try {
+      const collections = await Collection.find({ users: userId });
+  
+      if (collections.length > 0) {
+        return res.json({ assigned: true, collections });
+      } else {
+        return res.json({ assigned: false });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+
 
 
   module.exports = {
@@ -126,5 +144,6 @@ async function getAllCollections(req, res) {
     updatedcollection,
     removeUserFromCollection,
     getUsersByCollectionId,
+    checkUserAssigned,
     
   };

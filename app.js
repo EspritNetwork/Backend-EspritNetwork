@@ -8,7 +8,7 @@ const dotenv = require("dotenv");
 const googleAuth = require("./routes/index");
 const passport = require("passport");
 const session = require("express-session");
-
+const nodemailer = require('nodemailer');
 
 // Connect to database
 mongoose
@@ -40,6 +40,8 @@ const uploadRouter = require('./routes/uploadRouter');
 const userRouter = require("./routes/UserRoutes");
 const domaineRouter = require("./routes/domaine");
 const collectionRouter = require("./routes/collection");
+const vueRouter = require("./routes/vue");
+const meetRouter = require("./routes/meet");
 
 
 
@@ -63,10 +65,10 @@ app.use("/", googleAuth);
 // API
 app.use("/api/users", userRouter);
 
-app.use("/test", testRouter);
+app.use("/test", testRouter); 
 app.use("/question", questionRouter);
-app.use("/cv", cvRouter);
-app.use("/offre", offreRouter);
+app.use("/cv", cvRouter); 
+app.use("/offre", offreRouter); 
 app.use("/condidacy", condidacyRouter);
 app.use("/affiliation", affiliationRouter);
 app.use("/competence", competenceRouter);
@@ -74,6 +76,44 @@ app.use("/departement", departementRouter);
 app.use('/upload', uploadRouter);
 app.use("/domaine", domaineRouter);
 app.use("/collection", collectionRouter );
+app.use("/vue", vueRouter );
+app.use("/interview", meetRouter);
+
+
+
+//////////////////////**********mailing*****************///////////////////////////////////////////////////////////////
+const transporter = nodemailer.createTransport({
+	host: "smtp.gmail.com",
+	port: 465,
+	secure: true,
+	auth: {
+	  user: 'azizmarabou235@gmail.com',
+	  pass: 'qbyi qkao xoyd ihkj',
+	},
+  });
+
+  app.post('/send-email', (req, res) => {
+    const { recipient, subject, html } = req.body;
+  
+    const mailOptions = {
+      from: 'azizmarabou235@gmail.com',//baad nbadloha b user.session.email
+      to: recipient,
+      subject: subject,
+      html: html,
+    };
+  
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Erreur lors de l\'envoi de l\'e-mail:', error);
+        res.status(500).send('Erreur lors de l\'envoi de l\'e-mail');
+      } else {
+        console.log('E-mail envoyé:', info.response);
+        res.status(200).send('E-mail envoyé avec succès');
+      }
+    });
+  });
+  ////////////////////////////////////////***meeting****/////////////////////////////////////////////////////////////
+
 
 
 

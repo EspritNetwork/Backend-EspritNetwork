@@ -11,6 +11,7 @@ router.put('/update/:id', offreController.updateOffre);
 router.get('/getarchivesbyid/:id', offreController.getArchivesByIdUser);
 router.delete('/supprimer/:id', offreController.supprimerOffre);
 router.post('/Reutiliser/:id', offreController.RéutiliserOffer);
+router.get('/statistiques/competences', offreController.getStatistiquesOffresParCompetence);
 
 
 module.exports = router;
