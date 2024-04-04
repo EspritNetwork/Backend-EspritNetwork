@@ -1,116 +1,185 @@
 const Condidacy = require("../models/condidacy");
-const path = require('path');
-const fs = require('fs');
+const path = require("path");
+const fs = require("fs");
 
 async function addCondidacy(req, res) {
-  try {
-    const { date_postule, status, affiliation, document, specialite, anneediplome, user, offre } = req.body;
-    const condidacy = new Condidacy({ date_postule, status, affiliation, document, specialite, anneediplome, user, offre });
-    await condidacy.save();
-    res.status(201).json({ message: "Condidacy added successfully", condidacy });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
+	try {
+		const {
+			date_postule,
+			status,
+			affiliation,
+			document,
+			specialite,
+			anneediplome,
+			user,
+			offre,
+		} = req.body;
+		const condidacy = new Condidacy({
+			date_postule,
+			status,
+			affiliation,
+			document,
+			specialite,
+			anneediplome,
+			user,
+			offre,
+		});
+		await condidacy.save();
+		res
+			.status(201)
+			.json({ message: "Condidacy added successfully", condidacy });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
 }
-
 
 async function addCondidacy(req, res) {
-  try {
-    const { date_postule, status, affiliation, document, specialite, anneediplome, user, offre } = req.body;
-    const condidacy = new Condidacy({ date_postule, status, affiliation, document, specialite, anneediplome, user, offre });
-    await condidacy.save();
-    res.status(201).json({ message: "Condidacy added successfully", condidacy });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
+	try {
+		const {
+			date_postule,
+			status,
+			affiliation,
+			document,
+			specialite,
+			anneediplome,
+			user,
+			offre,
+		} = req.body;
+		const condidacy = new Condidacy({
+			date_postule,
+			status,
+			affiliation,
+			document,
+			specialite,
+			anneediplome,
+			user,
+			offre,
+		});
+		await condidacy.save();
+		res
+			.status(201)
+			.json({ message: "Condidacy added successfully", condidacy });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
 }
-
 
 async function getpdfcondiacy(req, res) {
-  try {
-    const pdfname = req.params.pdfname;
-    const documentPath = path.join(process.cwd(), 'DocumentsPdf', pdfname);
+	try {
+		const pdfname = req.params.pdfname;
+		const documentPath = path.join(process.cwd(), "DocumentsPdf", pdfname);
 
-    // Check if the file exists
-    if (fs.existsSync(documentPath)) {
-      res.status(200).sendFile(documentPath);
-    } else {
-      res.status(404).json({ error: 'PDF not found' });
-    }
-  } catch (error) {
-    console.error('Error fetching PDF:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-
-
-
+		// Check if the file exists
+		if (fs.existsSync(documentPath)) {
+			res.status(200).sendFile(documentPath);
+		} else {
+			res.status(404).json({ error: "PDF not found" });
+		}
+	} catch (error) {
+		console.error("Error fetching PDF:", error);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+}
 
 async function getAllCondidacies(req, res) {
-  try {
-    const condidacies = await Condidacy.find().populate('user'); // Use populate to include user details
-    res.status(200).json(condidacies);
-  } catch (err) {
-    res.status(400).json({ error: err });
-  }
+	try {
+		const condidacies = await Condidacy.find().populate("user"); // Use populate to include user details
+		res.status(200).json(condidacies);
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
 }
 
 async function getCondidacyById(req, res) {
-  try {
-    const condidacy = await Condidacy.findById(req.params.id).populate('user').populate({
-      path: 'offre',
-      populate: {
-        path: 'user'
-      }
-    });
-    res.status(200).json(condidacy);
-  } catch (err) {
-    res.status(400).json({ error: err });
-  }
+	try {
+		const condidacy = await Condidacy.findById(req.params.id)
+			.populate("user")
+			.populate({
+				path: "offre",
+				populate: {
+					path: "user",
+				},
+			});
+		res.status(200).json(condidacy);
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
 }
 
-
 const getCondidcayByIdUser = async (req, res) => {
-  try {
-    const condidacy = await Condidacy.find({ user: req.params.id }).populate('user').populate({
-      path: 'offre',
-      populate: {
-        path: 'user'
-      }
-    });    res.status(200).json(condidacy);
-  } catch (error) {
-    console.error('Error fetching condidacy by user ID:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
+	try {
+		const condidacy = await Condidacy.find({ user: req.params.id })
+			.populate("user")
+			.populate({
+				path: "offre",
+				populate: {
+					path: "user",
+				},
+			});
+		res.status(200).json(condidacy);
+	} catch (error) {
+		console.error("Error fetching condidacy by user ID:", error);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
 };
 
-
 async function deleteCondidacy(req, res) {
-  try {
-    const deletedCondidacy = await Condidacy.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: "Condidacy deleted successfully", condidacy: deletedCondidacy });
-  } catch (err) {
-    res.status(400).json({ error: err });
-  }
+	try {
+		const deletedCondidacy = await Condidacy.findByIdAndDelete(req.params.id);
+		res.status(200).json({
+			message: "Condidacy deleted successfully",
+			condidacy: deletedCondidacy,
+		});
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
 }
 
 async function updateCondidacy(req, res) {
-  try {
-    const updatedCondidacy = await Condidacy.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.status(200).json({ message: "Condidacy updated successfully", condidacy: updatedCondidacy });
-  } catch (err) {
-    res.status(400).json({ error: err });
-  }
+	try {
+		const updatedCondidacy = await Condidacy.findByIdAndUpdate(
+			req.params.id,
+			req.body,
+			{ new: true }
+		);
+		res.status(200).json({
+			message: "Condidacy updated successfully",
+			condidacy: updatedCondidacy,
+		});
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
 }
 
+async function updateStatusCandidacy(idCandidat, idOffre, status) {
+	try {
+		// Ensure 'Condidacy' model is properly defined
+		const updatedCandidacy = await Condidacy.findOneAndUpdate(
+			{ offre: idOffre, user: idCandidat }, // Query
+			{ status: status }, // Update
+			{ new: true } // Options: Return updated document
+		);
+
+		// Check if an update was successful
+		if (updatedCandidacy) {
+			return true; // Return true if successful
+		} else {
+			return false; // Return false if update failed
+		}
+	} catch (err) {
+		console.error(err); // Log any errors
+		return false; // Return false in case of error
+	}
+}
 module.exports = {
-  addCondidacy,
-  getpdfcondiacy,
-  getAllCondidacies,
-  getCondidacyById,
-  deleteCondidacy,
-  updateCondidacy,
-  getCondidcayByIdUser
+	addCondidacy,
+	getpdfcondiacy,
+	getAllCondidacies,
+	getCondidacyById,
+	deleteCondidacy,
+	updateCondidacy,
+	getCondidcayByIdUser,
+	updateStatusCandidacy,
 };

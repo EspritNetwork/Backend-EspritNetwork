@@ -3,22 +3,12 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const AntiTricherie = new Schema({
-	idOffre: {
-		type: String,
-	},
+	
 	idCandidat: {
 		type: String,
 	},
 	idTest: {
 		type: String,
-	},
-
-	message: {
-		type: String,
-	},
-	etat: {
-		type: Boolean,
-		default: false,
 	},
 	typeApapreil: {
 		type: String,
@@ -26,22 +16,13 @@ const AntiTricherie = new Schema({
 	emplacement: {
 		type: String,
 	},
-	rempliUneSeuleFois: {
+	isFullScreen: {
 		type: Boolean,
 	},
-	webcamActivee: {
+	isMouseInsideWindow: {
 		type: Boolean,
 	},
-	modePleinEcran: {
-		type: Boolean,
-	},
-	sourisDansFenetre: {
-		type: Boolean,
-	},
-	autorisationCamera: {
-		type: Boolean,
-	},
-	autorisationMicro: {
+	cameraActivated: {
 		type: Boolean,
 	},
 	vedioNavigateur: {

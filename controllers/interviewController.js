@@ -5,8 +5,10 @@ const User = require("../models/user");
 const Condidacy = require("../models/condidacy");
 const nodemailer = require("nodemailer");
 const Offre = require("../models/offre");
+const { updateStatusCandidacy } = require("./condidacyController");
 const GMAIL_USER = "orangedigitalcentretest@gmail.com";
 const GMAIL_PSW = "ylwvzbilzvcceuoa";
+
 async function PlanifierEntretienEnLigne(req, res) {
 	try {
 		const { date, idCandidat, idOffre } = req.body;
@@ -16,7 +18,6 @@ async function PlanifierEntretienEnLigne(req, res) {
 
 		// Save meeting link to the database
 		const data = { date, idCandidat, idOffre, link };
-		console.log("data ", data);
 
 		const interview = new Interview(data);
 		await interview.save();
@@ -25,11 +26,14 @@ async function PlanifierEntretienEnLigne(req, res) {
 		//find by id le user
 		const candidat = await User.findById(idCandidat);
 		const offre = await Offre.findById(idOffre);
-		console.log("offre", offre);
-		console.log("candidat", candidat.email);
-		// const email = "onesrhaime28@gmail.com";
 		const email = candidat.email;
-		console.log("email", email);
+
+		/****update candidacy status */
+		await Condidacy.findOneAndUpdate(
+			{ user: idCandidat, offre: idOffre },
+			{ $set: { status: "Invité pour un entretien" } },
+			{ new: true }
+		);
 
 		const transporter = nodemailer.createTransport({
 			service: "gmail",
@@ -108,15 +112,16 @@ async function PlanifierEntretienAubureau(req, res) {
 		console.log("data ", data);
 		const interview = new Interview(data);
 		await interview.save();
-		console.log("interview", interview);
+		/****update candidacy status */
+		await Condidacy.findOneAndUpdate(
+			{ user: idCandidat, offre: idOffre },
+			{ $set: { status: "Invité pour un entretien" } },
+			{ new: true }
+		);
 		//***** Alert  with mail to the candidat */
 		const candidat = await User.findById(idCandidat);
 		const offre = await Offre.findById(idOffre);
-		console.log("offre", offre);
-		console.log("candidat", candidat.email);
-		// const email = "onesrhaime28@gmail.com";
 		const email = candidat.email;
-		console.log("email", email);
 		const transporter = nodemailer.createTransport({
 			service: "gmail",
 			auth: {
@@ -153,7 +158,7 @@ async function PlanifierEntretienAubureau(req, res) {
 				<td style="padding: 20px">
 					<p style="margin: 2; font-size: 14px; color: #000000">
 						  Bonjour ${candidat.name},<br /><br />
-                    Suite à votre candidature pour l'offre <strong>${offre.titre}</strong>, vous avez été présélectionné pour passer un entretien dans nos bureaux.<br /> 
+                    Suite à votre candidature pour l'offre <strong>${offre.titre}</strong>, vous avez été présélectionné pour passer un entretien dans nos bureau le <strong>${date}</strong> <br /> 
                     Nous restons à votre disposition pour toute information complémentaire. <br/>N'hésitez pas à nous contacter par email à l'adresse <a href="mailto:contact@espritnetwork.com" style="color: #2cb543; text-decoration: underline;">contact@espritnetwork.com</a> ou par téléphone au +123456789.<br /><br />
                     Cordialement,<br />
                     L’équipe Esprit Network
@@ -183,21 +188,24 @@ async function EnovyerMaildAcceptation(req, res) {
 		console.log("idOffre", idOffre);
 		const candidat = await User.findById(idCandidat);
 		const offre = await Offre.findById(idOffre);
-		const candidature = await Condidacy.findOneAndUpdate(
+		// Update candidacy status
+
+		const updatedCandidacy = await Condidacy.findOneAndUpdate(
 			{ user: idCandidat, offre: idOffre },
-			{ $set: { status: "accepté" } }, // Mise à jour du statut de la candidature
-			{ new: true } // Pour obtenir le document mis à jour
+			{ $set: { status: "Accepté" } },
+			{ new: true }
 		);
-		console.log("candidature", candidature);
 
-		console.log("offre", offre);
-		console.log("candidat", candidat.email);
+		console.log("Updated Candidacy:", updatedCandidacy); // Log updated document
 
-		//***** Envoi d'un e-mail au candidat */
-
+		if (updatedCandidacy) {
+			console.log("Updated Candidacy:", updatedCandidacy);
+		} else {
+			console.log(
+				"No document found to update with the provided query parameters."
+			);
+		}
 		const email = candidat.email;
-		console.log("email", email);
-
 		const transporter = nodemailer.createTransport({
 			service: "gmail",
 			auth: {
@@ -263,20 +271,15 @@ async function EnovyerMailRefuse(req, res) {
 		console.log("idOffre", idOffre);
 		const candidat = await User.findById(idCandidat);
 		const offre = await Offre.findById(idOffre);
-		const candidature = await Condidacy.findOneAndUpdate(
+
+		/****update candidacy status */
+		await Condidacy.findOneAndUpdate(
 			{ user: idCandidat, offre: idOffre },
-			{ $set: { status: "accepté" } }, // Mise à jour du statut de la candidature
-			{ new: true } // Pour obtenir le document mis à jour
+			{ $set: { status: "Refusé" } },
+			{ new: true }
 		);
-		console.log("candidature", candidature);
-
-		console.log("offre", offre);
-		console.log("candidat", candidat.email);
-
-		//***** Envoi d'un e-mail au candidat */
 
 		const email = candidat.email;
-		console.log("email", email);
 		const transporter = nodemailer.createTransport({
 			service: "gmail",
 			auth: {
@@ -341,6 +344,9 @@ async function EnovyerMailRefuse(req, res) {
 async function SendMAilPourPassTest(candidat) {
 	try {
 		console.log("candidat", candidat);
+
+		/****update candidacy status */
+
 		const transporter = nodemailer.createTransport({
 			service: "gmail",
 			auth: {
@@ -402,6 +408,7 @@ async function SendMAilPourPassTest(candidat) {
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 }
+
 module.exports = {
 	PlanifierEntretienEnLigne,
 	PlanifierEntretienAubureau,

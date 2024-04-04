@@ -1,6 +1,7 @@
 const Test = require("../models/test");
 const Offre = require("../models/offre");
 const User = require("../models/user");
+const AntiCheating = require("../models/antiTricherie");
 const PassageTest = require("../models/PassageTest");
 
 const Condidacy = require("../models/condidacy");
@@ -177,18 +178,33 @@ async function rapportCandidat(req, res) {
 			},
 		]);
 
-		console.log("tttt:", data);
-		console.log("ddd:", data[0].passagetests);
-		console.log("idCandidat:", idCandidat);
-		console.log("idOffre:", idOffre);
+		// console.log("data :", data);
+		// console.log("ddd:", data[0].passagetests);
+		// console.log("idCandidat:", idCandidat);
+		// console.log("idOffre:", idOffre);
 
 		const candidatures = await Condidacy.find();
 		const candidature = candidatures.filter(
 			(c) => c.user.toString() === idCandidat && c.offre.toString() === idOffre
 		);
-		console.log("candidacy:", candidature);
+		let passageTest = data[0].passagetests;
+		// Créez un tableau de promesses pour chaque appel à AntiCheating.find
+		const promises = passageTest.map(async (element) => {
+			return AntiCheating.find({
+				idCandidat: element.idCandidat,
+				idTest: element.idTest,
+			});
+		});
 
-		res.status(200).json({data, candidature});
+		// Utilisez Promise.all pour attendre que toutes les promesses soient résolues
+		const antiCheatingData = await Promise.all(promises);
+
+		// Flattening the array of arrays into a single array of objects
+		const antiCheating = antiCheatingData.flat();
+
+		console.log("antiCheating:", antiCheating);
+
+		res.status(200).json({ data, candidature, antiCheating });
 	} catch (err) {
 		res.status(400).json({ error: err.message });
 	}

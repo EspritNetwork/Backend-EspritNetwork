@@ -8,7 +8,8 @@ const dotenv = require("dotenv");
 const googleAuth = require("./routes/index");
 const passport = require("passport");
 const session = require("express-session");
-
+const multer = require("multer");
+const fs = require("fs");
 // Connect to database
 mongoose
 	.connect(config.url)
@@ -33,6 +34,7 @@ const uploadRouter = require("./routes/uploadRouter");
 const userRouter = require("./routes/UserRoutes");
 const domaineRouter = require("./routes/domaine");
 const interviewRouter = require("./routes/interview");
+const antiTricherie = require("./models/antiTricherie");
 
 app.use(
 	session({
@@ -47,6 +49,45 @@ app.use(passport.initialize());
 require("./auth/google-auth")(passport);
 
 app.use("/", googleAuth);
+/**upload  */
+const upload = multer({ dest: "uploads/" }); // Dossier de destination pour enregistrer les fichiers
+
+let videoCounter = 0; // Compteur pour numéroter les vidéos
+
+app.post("/upload-video", upload.single("video"), async (req, res) => {
+	try {
+		// Chemin d'accès au dossier de destination
+		const destinationFolder =
+			"G:/Pidev-4Twin/Frontend-Test/Frontend-EspritNetwork/src/assets/video";
+
+		// Vérifie si le dossier de destination existe, sinon le crée
+		if (!fs.existsSync(destinationFolder)) {
+			fs.mkdirSync(destinationFolder, { recursive: true });
+		}
+
+		// Déplace le fichier vidéo depuis le dossier temporaire vers le dossier de destination
+		const oldPath = req.file.path;
+		videoCounter = videoCounter + 1;
+		const newPath = `${destinationFolder}/video${videoCounter}.webm`; // Renomme le fichier avec un nom unique
+		fs.renameSync(oldPath, newPath);
+		// try {
+		// 	log;
+		// 	await AntiTricherie.findOneAndUpdate(
+		// 		{ idCandidat: req.body.idCandidat, idTest: req.body.idTest },
+		// 		{ vedioNavigateur: newPath }
+		// 	);
+		// } catch (error) {
+		// 	console.log("antichhh", error);
+		// }
+		console.log("Video saved successfully at:", newPath);
+		res.send("Video uploaded and saved successfully");
+
+		videoCounter++; // Incrémente le compteur pour la prochaine vidéo
+	} catch (error) {
+		console.error("Error saving video:", error);
+		res.status(500).send("Internal Server Error");
+	}
+});
 
 // API
 app.use("/api/users", userRouter);

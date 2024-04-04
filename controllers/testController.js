@@ -5,6 +5,9 @@ const PassageTest = require("../models/PassageTest");
 const { response } = require("express");
 const { SendMAilPourPassTest } = require("./interviewController");
 const User = require("../models/user");
+const AntiTricherie = require("../models/antiTricherie");
+const { updateStatusCandidacy } = require("./condidacyController");
+
 async function addTest(req, res) {
 	try {
 		const test = new Test(req.body);
@@ -139,9 +142,7 @@ async function getAllTests(req, res) {
 
 async function getTestById(req, res) {
 	try {
-		console.log("getTestById :");
 		const test = await Test.findById(req.params.id);
-		console.log(test);
 		res.status(200).json(test);
 	} catch (err) {
 		console.log("err", err.message);
@@ -211,7 +212,8 @@ async function affecterTestAuCandidat(req, res) {
 			return res
 				.status(400)
 				.json({ message: "Veuillez sélectionner un candidat." });
-		} // Formater la date (dd-mm-yyyy)
+		}
+		// Formater la date (dd-mm-yyyy)
 
 		let invited_at = new Date();
 		invited_at = `${invited_at.getFullYear()}-${String(
@@ -227,6 +229,8 @@ async function affecterTestAuCandidat(req, res) {
 		/***Envoyer un mail au candidat pour le informer de ce test*/
 		const candidat = await User.findById(idCandidat);
 		SendMAilPourPassTest(candidat);
+		const status = "Invité pour un test technique";
+		console.log(updateStatusCandidacy(idCandidat, data.idOffre, status));
 		// Répondre avec succès
 		return res.status(201).json({
 			message: "Le test a été envoyé avec succès.",
@@ -241,98 +245,10 @@ async function affecterTestAuCandidat(req, res) {
 	}
 }
 
-// async function PassTest(req, res) {
-// 	// const { idTest, reponses, idCandidat, idOffre } = req.body;
-// 	try {
-// 		//console.log("PassTest");
-// 		const { idTest, reponses, idCandidat } = req.body;
-// 		// console.log(idTest, reponses);
-// 		//chercher  si le candidat a deja passer le test ou non si oui   on supprime l'ancien passage et on ajoute le nouveau passage
-// 		// on cherche le passage de test selon l'objet reponse si il  vide ou non
-// 		const passage = await PassageTest.findOne({
-// 			idTest: idTest,
-// 			idCandidat: idCandidat,
-// 		});
-// 		if (passage) {
-// 			console.log("passage", passage);
-// 			if (passage.response.length > 0) {
-// 				await PassageTest.findOneAndUpdate(
-// 					{ idTest: idTest, idCandidat: idCandidat },
-// 					{ $set: { response: "", etat: true } },
-// 					{ new: true }
-// 				);
-// 			}
-// 		}
-// 		const res1 = await PassageTest.findOneAndUpdate(
-// 			{ idTest: idTest, idCandidat: idCandidat },
-// 			{ $set: { response: reponses, etat: true } },
-// 			{ new: true }
-// 		);
-// 		// console.log("Updated Document:", res1);
-
-// 		/*
-// 		 *calculer le score de candidat selon les reponses si c'est correct ou non
-// 		 * si c'est correct et question de niveau basiqe  on ajoute 1
-// 		 * sinon si c'est de niveau intermediaire on ajoute 2
-// 		 * sinon on ajoute 3
-// 		 */
-// 		let score = 0;
-// 		const test = await Test.findById(idTest);
-// 		const questions = test.questions;
-// 		console.log("questions", questions);
-// 		//Parcourir les questions et les reponses de candidat pour calculer le score
-// 		for (let i = 0; i < questions.length; i++) {
-// 			if (questions[i]._id.toString() === reponses[i].idQuestion.toString()) {
-// 				console.log("if 1 yes");
-
-// 				const arrayOptions = questions[i].options;
-// 				for (let index = 0; index < arrayOptions.length; index++) {
-// 					console.log(
-// 						reponses[i].reponse,
-// 						"reponses[i].reponse",
-// 						arrayOptions[index].option,
-// 						"questions[i].options.option",
-// 						arrayOptions[index].isCorrect,
-// 						"questions[i].options.isCorrect"
-// 					);
-// 					if (
-// 						(reponses[i].reponse === arrayOptions[index].option &&
-// 							arrayOptions[index].isCorrect) === true
-// 					) {
-// 						console.log("if 2 yes :");
-// 						console.log(
-// 							reponses[i].reponse === arrayOptions[index].option &&
-// 								arrayOptions[index].isCorrect === true
-// 						);
-// 						console.log("questions[i].niveau", questions[i].niveau);
-// 						if (questions[i].niveau === "Basique") {
-// 							score += 1;
-// 						} else if (questions[i].niveau === "Intermédiaire") {
-// 							score += 2;
-// 						} else {
-// 							score += 3;
-// 						}
-// 					}
-// 				}
-// 			}
-// 		}
-// 		console.log("score", score);
-// 		const result = await PassageTest.findOneAndUpdate(
-// 			{ idTest: idTest, idCandidat: idCandidat },
-// 			{ $set: { score: score } },
-// 			{ new: true }
-// 		);
-
-// 		// console.log("Updated Document:", result);
-// 		res.status(200).json({ message: "Added successfully", test: result });
-// 	} catch (error) {
-// 		console.log("error", error.message);
-// 	}
-// }
 async function PassTest(req, res) {
 	try {
-		console.log(PassTest);
-		const { idTest, reponses, idCandidat } = req.body;
+		console.log("Appel fonction de passage de test : ", PassTest);
+		const { idTest, reponses, idCandidat, antiCheating } = req.body;
 
 		// Chercher si le candidat a déjà passé le test et mettre à jour ou créer le passage de test
 		let passage = await PassageTest.findOne({
@@ -348,9 +264,9 @@ async function PassTest(req, res) {
 				);
 			}
 		}
-		const resss = await PassageTest.findOneAndUpdate(
+		await PassageTest.findOneAndUpdate(
 			{ idTest: idTest, idCandidat: idCandidat },
-			{ $set: { response: reponses, etat: true } },
+			{ $set: { response: reponses, etat: true, passed_at: new Date() } },
 			{ new: true }
 		);
 
@@ -384,7 +300,25 @@ async function PassTest(req, res) {
 			{ $set: { score: score } },
 			{ new: true }
 		);
-		console.log("Updated Document:", result);
+		console.log("antiCheating", antiCheating);
+
+		const dataAntiCheanting = {
+			idTest: idTest,
+			idCandidat: idCandidat,
+			autorisationCamera: antiCheating.autorisationCamera,
+			autorisationFullScreen: antiCheating.autorisationFullScreen,
+			sourisDansFenetre: antiCheating.sourisDansFenetre,
+			typeApapreil: antiCheating.typeApapreil,
+			cameraActivated: antiCheating.cameraActivated,
+			isFullScreen: antiCheating.isFullScreen,
+			isMouseInsideWindow: antiCheating.isMouseInsideWindow,
+		};
+		console.log("dataAntiCheanting", dataAntiCheanting);
+
+		const antiTricherie = new AntiTricherie(dataAntiCheanting);
+
+		await antiTricherie.save();
+
 		res.status(200).json({ message: "Added successfully", test: result });
 	} catch (error) {
 		console.log("error", error.message);
@@ -408,7 +342,7 @@ async function getTestPasserbyCandidat(req, res) {
 				offre: off,
 			});
 		}
-		console.log(resultat);
+		// console.log(resultat);
 
 		res.status(200).json(resultat);
 	} catch (err) {
