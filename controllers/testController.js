@@ -7,6 +7,7 @@ const { SendMAilPourPassTest } = require("./interviewController");
 const User = require("../models/user");
 const AntiTricherie = require("../models/antiTricherie");
 const { updateStatusCandidacy } = require("./condidacyController");
+const condidacy = require("../models/condidacy");
 
 async function addTest(req, res) {
 	try {
@@ -199,8 +200,10 @@ async function getbyCandidat(req, res) {
 async function affecterTestAuCandidat(req, res) {
 	try {
 		console.log("affecterTestAuCandidat");
-		const { idTest, idCandidat } = req.body;
+		const { idTest, idCandidat, idOffre } = req.body;
 		let data = req.body;
+		console.log(req.body);
+		console.log(idTest, idCandidat);
 		const exist = await PassageTest.findOne({ idTest, idCandidat });
 		if (exist) {
 			return res
@@ -230,7 +233,13 @@ async function affecterTestAuCandidat(req, res) {
 		const candidat = await User.findById(idCandidat);
 		SendMAilPourPassTest(candidat);
 		const status = "Invité pour un test technique";
-		console.log(updateStatusCandidacy(idCandidat, data.idOffre, status));
+		await condidacy.findOneAndUpdate(
+			{ user: idCandidat, offre: idOffre },
+			{ $set: { status: status } },
+			{ new: true }
+		);
+
+		// console.log(updateStatusCandidacy(idCandidat, data.idOffre, status));
 		// Répondre avec succès
 		return res.status(201).json({
 			message: "Le test a été envoyé avec succès.",

@@ -11,7 +11,7 @@ router.get("/getbyid/:id", testController.getTestById);
 router.delete("/delete/:id", testController.deleteTest);
 router.put("/update/:id", testController.updateTest);
 //passage de test
-router.post("/AffecterTest", testController.affecterTestAuCandidat);
+router.post("/affecterTest", testController.affecterTestAuCandidat);
 router.get("/getTestPasserbyCandidat", testController.getTestPasserbyCandidat);
 router.put("/passTest", testController.PassTest);
 router.get("/getbyCandidat", testController.getbyCandidat);
