@@ -35,6 +35,7 @@ const PassageTest = new Schema({
 		default: false,
 	},
 	score: { type: Number, default: 0 },
+	critere: { type: String },
 });
 
 module.exports = mongoose.model("PassageTest", PassageTest);

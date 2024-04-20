@@ -280,6 +280,14 @@ async function PassTest(req, res) {
 		);
 
 		// Calcul du score en parcourant les réponses et les questions
+		let critere = "";
+		nbBasique = 0;
+		nbIntermediaire = 0;
+		nbAvance = 0;
+		nbBasiqueCorrect = 0;
+		nbIntermediaireCorrect = 0;
+		nbAvanceCorrect = 0;
+
 		let score = 0;
 		const test = await Test.findById(idTest);
 		const questions = test.questions;
@@ -291,22 +299,49 @@ async function PassTest(req, res) {
 				const option = question.options.find(
 					(opt) => opt.option === response.reponse && opt.isCorrect
 				);
+				//get les nb de question par niveau
+				if (question.niveau === "Basique") {
+					nbBasique++;
+				} else if (question.niveau === "Intermédiaire") {
+					nbIntermediaire++;
+				} else {
+					nbAvance++;
+				}
+				//get les nb de question correct par niveau et clacule de score
 				if (option) {
 					if (question.niveau === "Basique") {
 						score += 1;
+						nbBasiqueCorrect++;
 					} else if (question.niveau === "Intermédiaire") {
 						score += 2;
+						nbIntermediaireCorrect++;
 					} else {
 						score += 3;
+						nbAvanceCorrect++;
 					}
 				}
+
+				//composer un chaine de caractere critere pas le nb q correct par niveau
+				critere =
+					"Basique: " +
+					nbBasiqueCorrect +
+					"/" +
+					nbBasique +
+					" ,Intermédiaire: " +
+					nbIntermediaireCorrect +
+					"/" +
+					nbIntermediaire +
+					" ,Avancé: " +
+					nbAvanceCorrect +
+					"/" +
+					nbAvance;
 			}
 		}
 
-		// Mettre à jour le score du passage de test
+		// Mettre à jour le score du passage de test et le critère
 		const result = await PassageTest.findOneAndUpdate(
 			{ idTest: idTest, idCandidat: idCandidat },
-			{ $set: { score: score } },
+			{ $set: { score: score, critere: critere } },
 			{ new: true }
 		);
 		console.log("antiCheating", antiCheating);

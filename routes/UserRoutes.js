@@ -38,14 +38,15 @@ userRouter.post(
 				token: generateToken(user._id),
 				createdAt: user.createdAt,
 				verified: user.verified,
-				adresseC: "Tunis",
+				adresseC: "ahmed",
+
 				role: user.role,
 			});
 		} else if (!user.verfied) {
-			throw new Error("verify your contact information");
+			return res.status(400).json({ error: "verify your contact information" });
 		} else {
 			res.status(401);
-			throw new Error("Invalid Email or Password");
+			return res.status(400).json({ error: "Invalid Email or Password" });
 		}
 	})
 );
@@ -66,7 +67,7 @@ userRouter.post(
 				from: `test@${domain}`,
 				to: email,
 				subject: "Reset Your Pasword ",
-				text: `http://localhost:3000/PasswordReset/${token}`,
+				text: `http://localhost:5173/PasswordReset/${token}`,
 			})
 			.then((res) => console.log(res))
 			.catch((err) => console.err(err));
@@ -149,42 +150,58 @@ userRouter.post(
 	asyncHandler(async (req, res) => {
 		const { name, email, password, confirmPassword } = req.body;
 
-		// Vérifiez si l'utilisateur existe déjà
 		const userExists = await User.findOne({ email });
+		const patt = new RegExp(
+			/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/
+		);
 
 		if (userExists) {
-			return res.status(400).json({ error: "User already exists" });
+			res.status(400);
+			throw new Error("User already exists");
 		}
 
-		// Vérifiez si les mots de passe correspondent
-		if (password !== confirmPassword) {
-			return res.status(400).json({ error: "Passwords do not match" });
+		if (password != confirmPassword) {
+			res.status(400);
+			throw new Error("Passwords does not match");
 		}
 
-		// Créez un nouvel utilisateur avec le rôle de "company"
+		if (!patt.test(password)) {
+			res.status(400);
+			throw new Error(
+				"password must contain at least eight characters, at least one number and both lower and uppercase letters and special characters"
+			);
+		}
+		const apiKey = "1f6aa33dab2c7e0350074b230b56a2d2-162d1f80-66f0a1de";
+		const domain = "sandboxc7824dced682496eb2a77fe4823e50cb.mailgun.org";
+		const mg = new mailgun({ apiKey, domain });
+		const token = generateToken(email);
+
 		const user = await User.create({
 			name,
 			email,
 			password,
 			confirmPassword,
+			verfied: false,
+			verifyToken: token,
 			role: "company", // Définissez le rôle sur "company"
-			verified: false, // Par défaut, l'utilisateur n'est pas vérifié
 		});
 
 		if (user) {
-			// Envoyez une réponse réussie
-			return res.status(201).json({
-				message: "User registered successfully",
-				user: {
-					_id: user._id,
-					name: user.name,
-					email: user.email,
-					role: user.role,
-				},
+			mg.messages()
+				.send({
+					from: `test@${domain}`,
+					to: email,
+					subject: "Verify account",
+					text: `http://localhost:5173/activate/${token}`,
+				})
+				.then((res) => console.log(res))
+				.catch((err) => console.err(err));
+			res.status(201).json({
+				message: "Please verify mail",
 			});
 		} else {
-			// En cas d'erreur lors de la création de l'utilisateur
-			return res.status(400).json({ error: "Invalid user data" });
+			res.status(400);
+			throw new Error("Invalid User Data");
 		}
 	})
 );
@@ -195,42 +212,58 @@ userRouter.post(
 	asyncHandler(async (req, res) => {
 		const { name, email, password, confirmPassword } = req.body;
 
-		// Vérifiez si l'utilisateur existe déjà
 		const userExists = await User.findOne({ email });
+		const patt = new RegExp(
+			/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/
+		);
 
 		if (userExists) {
-			return res.status(400).json({ error: "User already exists" });
+			res.status(400);
+			throw new Error("User already exists");
 		}
 
-		// Vérifiez si les mots de passe correspondent
-		if (password !== confirmPassword) {
-			return res.status(400).json({ error: "Passwords do not match" });
+		if (password != confirmPassword) {
+			res.status(400);
+			throw new Error("Passwords does not match");
 		}
 
-		// Créez un nouvel utilisateur avec le rôle de "company"
+		if (!patt.test(password)) {
+			res.status(400);
+			throw new Error(
+				"password must contain at least eight characters, at least one number and both lower and uppercase letters and special characters"
+			);
+		}
+		const apiKey = "1f6aa33dab2c7e0350074b230b56a2d2-162d1f80-66f0a1de";
+		const domain = "sandboxc7824dced682496eb2a77fe4823e50cb.mailgun.org";
+		const mg = new mailgun({ apiKey, domain });
+		const token = generateToken(email);
+
 		const user = await User.create({
 			name,
 			email,
 			password,
 			confirmPassword,
+			verfied: false,
+			verifyToken: token,
 			role: "student", // Définissez le rôle sur "company"
-			verified: false, // Par défaut, l'utilisateur n'est pas vérifié
 		});
 
 		if (user) {
-			// Envoyez une réponse réussie
-			return res.status(201).json({
-				message: "User registered successfully",
-				user: {
-					_id: user._id,
-					name: user.name,
-					email: user.email,
-					role: user.role,
-				},
+			mg.messages()
+				.send({
+					from: `test@${domain}`,
+					to: email,
+					subject: "Verify account",
+					text: `http://localhost:5173/activate/${token}`,
+				})
+				.then((res) => console.log(res))
+				.catch((err) => console.err(err));
+			res.status(201).json({
+				message: "Please verify mail",
 			});
 		} else {
-			// En cas d'erreur lors de la création de l'utilisateur
-			return res.status(400).json({ error: "Invalid user data" });
+			res.status(400);
+			throw new Error("Invalid User Data");
 		}
 	})
 );
@@ -241,42 +274,58 @@ userRouter.post(
 	asyncHandler(async (req, res) => {
 		const { name, email, password, confirmPassword } = req.body;
 
-		// Vérifiez si l'utilisateur existe déjà
 		const userExists = await User.findOne({ email });
+		const patt = new RegExp(
+			/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/
+		);
 
 		if (userExists) {
-			return res.status(400).json({ error: "User already exists" });
+			res.status(400);
+			throw new Error("User already exists");
 		}
 
-		// Vérifiez si les mots de passe correspondent
-		if (password !== confirmPassword) {
-			return res.status(400).json({ error: "Passwords do not match" });
+		if (password != confirmPassword) {
+			res.status(400);
+			throw new Error("Passwords does not match");
 		}
 
-		// Créez un nouvel utilisateur avec le rôle de "company"
+		if (!patt.test(password)) {
+			res.status(400);
+			throw new Error(
+				"password must contain at least eight characters, at least one number and both lower and uppercase letters and special characters"
+			);
+		}
+		const apiKey = "1f6aa33dab2c7e0350074b230b56a2d2-162d1f80-66f0a1de";
+		const domain = "sandboxc7824dced682496eb2a77fe4823e50cb.mailgun.org";
+		const mg = new mailgun({ apiKey, domain });
+		const token = generateToken(email);
+
 		const user = await User.create({
 			name,
 			email,
 			password,
 			confirmPassword,
+			verfied: false,
+			verifyToken: token,
 			role: "alumni", // Définissez le rôle sur "company"
-			verified: false, // Par défaut, l'utilisateur n'est pas vérifié
 		});
 
 		if (user) {
-			// Envoyez une réponse réussie
-			return res.status(201).json({
-				message: "User registered successfully",
-				user: {
-					_id: user._id,
-					name: user.name,
-					email: user.email,
-					role: user.role,
-				},
+			mg.messages()
+				.send({
+					from: `test@${domain}`,
+					to: email,
+					subject: "Verify account",
+					text: `http://localhost:5173/activate/${token}`,
+				})
+				.then((res) => console.log(res))
+				.catch((err) => console.err(err));
+			res.status(201).json({
+				message: "Please verify mail",
 			});
 		} else {
-			// En cas d'erreur lors de la création de l'utilisateur
-			return res.status(400).json({ error: "Invalid user data" });
+			res.status(400);
+			throw new Error("Invalid User Data");
 		}
 	})
 );
@@ -287,42 +336,58 @@ userRouter.post(
 	asyncHandler(async (req, res) => {
 		const { name, email, password, confirmPassword } = req.body;
 
-		// Vérifiez si l'utilisateur existe déjà
 		const userExists = await User.findOne({ email });
+		const patt = new RegExp(
+			/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/
+		);
 
 		if (userExists) {
-			return res.status(400).json({ error: "User already exists" });
+			res.status(400);
+			throw new Error("User already exists");
 		}
 
-		// Vérifiez si les mots de passe correspondent
-		if (password !== confirmPassword) {
-			return res.status(400).json({ error: "Passwords do not match" });
+		if (password != confirmPassword) {
+			res.status(400);
+			throw new Error("Passwords does not match");
 		}
 
-		// Créez un nouvel utilisateur avec le rôle de "company"
+		if (!patt.test(password)) {
+			res.status(400);
+			throw new Error(
+				"password must contain at least eight characters, at least one number and both lower and uppercase letters and special characters"
+			);
+		}
+		const apiKey = "1f6aa33dab2c7e0350074b230b56a2d2-162d1f80-66f0a1de";
+		const domain = "sandboxc7824dced682496eb2a77fe4823e50cb.mailgun.org";
+		const mg = new mailgun({ apiKey, domain });
+		const token = generateToken(email);
+
 		const user = await User.create({
 			name,
 			email,
 			password,
 			confirmPassword,
+			verfied: false,
+			verifyToken: token,
 			role: "esprit_staff", // Définissez le rôle sur "company"
-			verified: false, // Par défaut, l'utilisateur n'est pas vérifié
 		});
 
 		if (user) {
-			// Envoyez une réponse réussie
-			return res.status(201).json({
-				message: "User registered successfully",
-				user: {
-					_id: user._id,
-					name: user.name,
-					email: user.email,
-					role: user.role,
-				},
+			mg.messages()
+				.send({
+					from: `test@${domain}`,
+					to: email,
+					subject: "Verify account",
+					text: `http://localhost:5173/activate/${token}`,
+				})
+				.then((res) => console.log(res))
+				.catch((err) => console.err(err));
+			res.status(201).json({
+				message: "Please verify mail",
 			});
 		} else {
-			// En cas d'erreur lors de la création de l'utilisateur
-			return res.status(400).json({ error: "Invalid user data" });
+			res.status(400);
+			throw new Error("Invalid User Data");
 		}
 	})
 );
@@ -333,42 +398,58 @@ userRouter.post(
 	asyncHandler(async (req, res) => {
 		const { name, email, password, confirmPassword } = req.body;
 
-		// Vérifiez si l'utilisateur existe déjà
 		const userExists = await User.findOne({ email });
+		const patt = new RegExp(
+			/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/
+		);
 
 		if (userExists) {
-			return res.status(400).json({ error: "User already exists" });
+			res.status(400);
+			throw new Error("User already exists");
 		}
 
-		// Vérifiez si les mots de passe correspondent
-		if (password !== confirmPassword) {
-			return res.status(400).json({ error: "Passwords do not match" });
+		if (password != confirmPassword) {
+			res.status(400);
+			throw new Error("Passwords does not match");
 		}
 
-		// Créez un nouvel utilisateur avec le rôle de "company"
+		if (!patt.test(password)) {
+			res.status(400);
+			throw new Error(
+				"password must contain at least eight characters, at least one number and both lower and uppercase letters and special characters"
+			);
+		}
+		const apiKey = "1f6aa33dab2c7e0350074b230b56a2d2-162d1f80-66f0a1de";
+		const domain = "sandboxc7824dced682496eb2a77fe4823e50cb.mailgun.org";
+		const mg = new mailgun({ apiKey, domain });
+		const token = generateToken(email);
+
 		const user = await User.create({
 			name,
 			email,
 			password,
 			confirmPassword,
+			verfied: false,
+			verifyToken: token,
 			role: "teacher", // Définissez le rôle sur "company"
-			verified: false, // Par défaut, l'utilisateur n'est pas vérifié
 		});
 
 		if (user) {
-			// Envoyez une réponse réussie
-			return res.status(201).json({
-				message: "User registered successfully",
-				user: {
-					_id: user._id,
-					name: user.name,
-					email: user.email,
-					role: user.role,
-				},
+			mg.messages()
+				.send({
+					from: `test@${domain}`,
+					to: email,
+					subject: "Verify account",
+					text: `http://localhost:5173/activate/${token}`,
+				})
+				.then((res) => console.log(res))
+				.catch((err) => console.err(err));
+			res.status(201).json({
+				message: "Please verify mail",
 			});
 		} else {
-			// En cas d'erreur lors de la création de l'utilisateur
-			return res.status(400).json({ error: "Invalid user data" });
+			res.status(400);
+			throw new Error("Invalid User Data");
 		}
 	})
 );
