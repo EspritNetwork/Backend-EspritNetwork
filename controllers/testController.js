@@ -2,12 +2,13 @@ const Test = require("../models/test");
 const Offre = require("../models/offre");
 const Question = require("../models/question");
 const PassageTest = require("../models/PassageTest");
-const { response } = require("express");
+const session = require("../models/session");
 const { SendMAilPourPassTest } = require("./interviewController");
 const User = require("../models/user");
 const AntiTricherie = require("../models/antiTricherie");
-const { updateStatusCandidacy } = require("./condidacyController");
 const condidacy = require("../models/condidacy");
+const xlsx = require("xlsx");
+const multer = require("multer");
 
 async function addTest(req, res) {
 	try {
@@ -239,8 +240,6 @@ async function affecterTestAuCandidat(req, res) {
 			{ new: true }
 		);
 
-		// console.log(updateStatusCandidacy(idCandidat, data.idOffre, status));
-		// Répondre avec succès
 		return res.status(201).json({
 			message: "Le test a été envoyé avec succès.",
 			test: newPassageTest,
@@ -394,6 +393,106 @@ async function getTestPasserbyCandidat(req, res) {
 	}
 }
 
+/*****SHeeet* */
+
+const storage = multer.diskStorage({
+	destination: (req, file, cb) => {
+		cb(null, "./uploads/");
+	},
+	filename: (req, file, cb) => {
+		const fileName = file.originalname.toLowerCase().split(" ").join("-");
+		cb(null, file.fieldname + "-" + fileName);
+	},
+});
+
+const upload = multer({
+	storage: storage,
+}).single("file");
+
+async function importAndInviteCandidatsToPassTest(req, res) {
+	try {
+		console.log(" Function : import And Invite Candidats To PassTest");
+		console.log("Received FormData:", req.body.id); // Log the FormData object
+		upload(req, res, async (err) => {
+			if (err) {
+				return res
+					.status(400)
+					.json({ success: false, message: "Error uploading file" });
+			}
+
+			if (!req.file) {
+				return res
+					.status(400)
+					.json({ success: false, message: "No file uploaded" });
+			}
+			const filePath = req.file.path;
+			const file = xlsx.readFile(filePath);
+			const sheets = file.SheetNames;
+			const candidats = [];
+
+			for (let i = 0; i < sheets.length; i++) {
+				const temp = xlsx.utils.sheet_to_json(file.Sheets[file.SheetNames[i]]);
+				temp.forEach((row) => {
+					candidats.push(row);
+				});
+			}
+			console.log(candidats.length);
+			///tester if data  from body is empty
+			if (candidats.length == 0) {
+				return res.status(400).json({ success: false, message: "No data" });
+			}
+
+			// get session by id from collect session
+			const s = await session.findById(req.body.id);
+			console.log("session", s);
+
+			// 3andi tableau data fih les les candidats  ismo candidats
+			const passage_test_data = [];
+			//lazim injib data min session ily ana faha puis n3adiha l passage_test_data ilkol 	candidat fil candidats bil id imta3o
+			for (let i = 0; i < candidats.length; i++) {
+				// parcpurir les tests sended in the body
+
+				for (let j = 0; j < s.testes.length; j++) {
+					let invited_at = new Date();
+					invited_at = `${invited_at.getFullYear()}-${String(
+						invited_at.getMonth() + 1
+					).padStart(2, "0")}-${String(invited_at.getDate()).padStart(2, "0")}`;
+
+					const test = s.testes[j];
+					const data = {
+						idTest: test._id,
+						idCandidat: candidats[i].Id,
+						idOffre: s.Offre._id,
+						invited_at: invited_at,
+					};
+
+					//	send mail
+					const candidat = await User.findById(data.idCandidat);
+					SendMAilPourPassTest(candidat);
+
+					const status = "Invité pour un test technique";
+					await condidacy.findOneAndUpdate(
+						{ user: data.idCandidat, offre: data.idOffre },
+						{ $set: { status: status } },
+						{ new: true }
+					);
+
+					passage_test_data.push(data);
+				}
+			}
+			// console.log(questionsToAdd);
+			const sendTestsToCandidats = await PassageTest.insertMany(
+				passage_test_data
+			);
+
+			res.status(201).json({ success: true, data: sendTestsToCandidats });
+		});
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ success: false, message: "Server Error" });
+	}
+}
+
 module.exports = {
 	addTest,
 	addAutomaticTest,
@@ -406,4 +505,5 @@ module.exports = {
 	affecterTestAuCandidat,
 	PassTest,
 	getTestPasserbyCandidat,
+	importAndInviteCandidatsToPassTest,
 };

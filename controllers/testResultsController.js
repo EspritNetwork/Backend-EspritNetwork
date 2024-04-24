@@ -178,15 +178,18 @@ async function rapportCandidat(req, res) {
 			},
 		]);
 
-		// console.log("data :", data);
-		// console.log("ddd:", data[0].passagetests);
-		// console.log("idCandidat:", idCandidat);
-		// console.log("idOffre:", idOffre);
-
 		const candidatures = await Condidacy.find();
 		const candidature = candidatures.filter(
 			(c) => c.user.toString() === idCandidat && c.offre.toString() === idOffre
 		);
+		//if candidature not found  add new candidature to the candidature collection
+		if (candidature.length === 0) {
+			const newCandidature = new Condidacy({
+				user: idCandidat,
+				offre: idOffre,
+			});
+			await newCandidature.save();
+		}
 		let passageTest = data[0].passagetests;
 		// Créez un tableau de promesses pour chaque appel à AntiCheating.find
 		const promises = passageTest.map(async (element) => {

@@ -19,6 +19,10 @@ router.get("/getbyCandidat", testController.getbyCandidat);
 router.get("/getResultTests", testResultsController.getAllResultsTests);
 
 router.get("/candidatRapport", testResultsController.rapportCandidat);
+router.post(
+	"/importAndInviteCandidatsToPassTest",
+	testController.importAndInviteCandidatsToPassTest
+);
 //router.get(
 // 	"/getResultTestsByOffre",
 // 	testResultsController.getResultTestsByOffre

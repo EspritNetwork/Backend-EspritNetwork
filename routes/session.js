@@ -35,5 +35,18 @@ router.get("/getbycompanyid", async (req, res) => {
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 });
+router.get("/getbyCompanyIdAndSessionId", async (req, res) => {
+	try {
+		console.log(" Session : getbyCompanyIdAndSessionId");
+		const sessions = await Session.find({
+			companyID: req.query.companyID,
+			_id: req.query.sessionID,
+		});
+		res.status(200).json(sessions);
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+});
 
 module.exports = router;

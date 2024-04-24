@@ -168,11 +168,11 @@ async function PlanifierEntretienAubureau(req, res) {
 		</table>
 	</body>`,
 		});
-		if (info) {
+		/* if (info) {
 			console.log(info);
 		} else {
 			console.log("err");
-		}
+		} */
 		res
 			.status(201)
 			.json({ message: "interview added successfully", interview });
@@ -344,21 +344,21 @@ async function EnovyerMailRefuse(req, res) {
 async function SendMAilPourPassTest(candidat) {
 	try {
 		console.log("candidat", candidat);
+		if (candidat != null) {
+			/****update candidacy status */
 
-		/****update candidacy status */
-
-		const transporter = nodemailer.createTransport({
-			service: "gmail",
-			auth: {
-				user: GMAIL_USER,
-				pass: GMAIL_PSW,
-			},
-		});
-		let info = await transporter.sendMail({
-			from: GMAIL_USER,
-			to: candidat.email,
-			subject: `Invitation pour passer un test technique`,
-			html: `	<body>
+			const transporter = nodemailer.createTransport({
+				service: "gmail",
+				auth: {
+					user: GMAIL_USER,
+					pass: GMAIL_PSW,
+				},
+			});
+			let info = await transporter.sendMail({
+				from: GMAIL_USER,
+				to: candidat.email,
+				subject: `Invitation pour passer un test technique`,
+				html: `	<body>
 		 <table width="100%">
 			<tr>
 				<td style="padding: 20px 0; background-color: #000000">
@@ -395,17 +395,17 @@ async function SendMAilPourPassTest(candidat) {
 			</tr>
 		</table>
 	               </body>`,
-		});
-		if (info) {
-			console.log(info);
-			return true;
-		} else {
-			console.log("err");
-			return false;
+			});
+			if (info) {
+				console.log(info);
+				return true;
+			} else {
+				console.log("err");
+				return false;
+			}
 		}
 	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: "Internal Server Error" });
+		console.log({ error: "Internal Server Error" });
 	}
 }
 
