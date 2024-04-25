@@ -51,6 +51,7 @@ async function getUsersByCollectionId(req, res) {
 			name: user.name,
 			email: user.email,
 			specialite: user.specialite,
+			pic: user.pic,
 
 			// Ajoutez d'autres propriétés d'utilisateur que vous souhaitez renvoyer
 		}));
