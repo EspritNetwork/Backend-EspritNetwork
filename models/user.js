@@ -32,7 +32,7 @@ const userSchema = mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['student', 'alumni', 'esprit_staff', 'teacher', 'company' ],
+      enum: [ "ADMIN" , 'student', 'alumni', 'esprit_staff', 'teacher', 'company' ],
       default: "user",
       required: true,
     },
@@ -54,9 +54,33 @@ const userSchema = mongoose.Schema(
       type: String,
       required: false,
     },
+    lastLogin: {
+      type: Date,
+      default: Date.now,
+    },
+    previousLogin: {
+      type: Date,
+    }, 
+    
     adresseC: {
         type: String,
     },
+    nameC  : {
+      type: String,
+  },
+  descriptionC:  {
+    type: String,
+},
+cin:  {
+  type: Number,
+} , 
+cin:  {
+  type: Number,
+},
+
+
+
+
   },
   {
     timestamps: true,

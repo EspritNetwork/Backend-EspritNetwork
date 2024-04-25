@@ -40,6 +40,10 @@ const CvSchema = new Schema({
       }],
       competences: [String],
       langues: [String],
+      pourcentage: {
+        type: Number,
+        default: 0
+      },
       
     // here we represente forign key user 
     user: {

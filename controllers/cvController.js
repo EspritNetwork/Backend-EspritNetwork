@@ -1,4 +1,5 @@
 const Cv = require("../models/cv");
+const { exists } = require("../models/test");
 
 // const defaultUserId = "65e383ad98ae7547e1fb5843";
 
@@ -114,6 +115,25 @@ async function uploadImageCv(req, res) {
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 }
+async function updatepourcentageById(req, res) {
+	try {
+		const userId = req.body.id; 
+		console.log(userId);
+		const datacv = await Cv.findOne({ user: userId }); // Find the CV by user ID
+		if (!datacv) {
+			return res.status(404).json({ error: "CV not found for this user" });
+		}
+		datacv.pourcentage = req.body.pourcentage; // Update the percentage
+		await datacv.save(); // Save the changes
+		return res.status(200).json({ message: "Percentage updated successfully" });
+	} catch (error) {
+		console.error("Error updating percentage:", error);
+		return res.status(500).json({ error: "Internal Server Error" });
+	}
+}
+
+
+
 
 module.exports = {
 	addCv,
@@ -123,4 +143,5 @@ module.exports = {
 	updateCv,
 	getCvByUserId,
 	uploadImageCv,
+	updatepourcentageById
 };

@@ -1,4 +1,6 @@
 const Condidacy = require("../models/condidacy");
+const Cv = require("../models/cv");
+
 const path = require('path');
 const fs = require('fs');
 
@@ -18,7 +20,12 @@ async function addCondidacy(req, res) {
 async function getCondidacyByIdOffre(req, res) {
   try {
     const offreId = req.params.id;
-    const condidacies = await Condidacy.find({ offre: offreId }).populate('user');
+    const condidacies = await Condidacy.find({ offre: offreId }).populate('user').populate({
+      path: 'offre',
+      populate: {
+        path: 'user'
+      }
+    });
     res.status(200).json(condidacies);
   } catch (error) {
     console.error('Error fetching condidacies by offer ID:', error);
@@ -43,6 +50,24 @@ async function getpdfcondiacy(req, res) {
   }
 };
 
+async function getcondidacyVerified(req, res) {
+  try {
+    const idOffre = req.query.offreId; // Access offreId from the query parameters
+    console.log("idOffre",idOffre);
+    const condidacies = await Condidacy.find({ offre: idOffre }).populate('user').populate({
+      path: 'offre',
+      populate: {
+        path: 'user'
+      }
+    });
+    const cvs = await Cv.find({ pourcentage: 100 });
+    const candidats = condidacies.filter((c) => cvs.find((cv) => cv.user.toString() === c.user._id.toString()));
+    console.log("vvv :",candidats);
+    res.status(200).json(candidats);
+  } catch (err) {
+    res.status(400).json({ error: err });
+  }
+}
 
 
 
@@ -112,5 +137,6 @@ module.exports = {
   deleteCondidacy,
   updateCondidacy,
   getCondidcayByIdUser,
-  getCondidacyByIdOffre
+  getCondidacyByIdOffre,
+  getcondidacyVerified
 };

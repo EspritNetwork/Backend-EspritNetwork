@@ -72,6 +72,7 @@ app.use("/domaine", domaineRouter);
 app.use("/collection", collectionRouter);
 app.use("/vue", vueRouter);
 app.use("/interview", interviewRouter);
+app.use("/meet", meetRouter);
 app.use("/session", sessionRouter);
 
 //////////////////////**********mailing*****************///////////////////////////////////////////////////////////////

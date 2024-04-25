@@ -10,6 +10,6 @@ router.put('/update/:id', condidacyController.updateCondidacy);
 router.get('/getbyiduser/:id', condidacyController.getCondidcayByIdUser);
 router.get('/getpdf/:pdfname', condidacyController.getpdfcondiacy);
 router.get('/getbyidoffre/:id', condidacyController.getCondidacyByIdOffre);
-
+router.get('/getverifiedCondidacy', condidacyController.getcondidacyVerified);
 
 module.exports = router;
