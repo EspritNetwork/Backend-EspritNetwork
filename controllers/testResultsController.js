@@ -81,6 +81,25 @@ async function getAllResultsTests(req, res) {
 	}
 }
 
+async function getResultTestbyCandidatAndOffre(req, res) {
+	try {
+		console.log("getResultTestbyCandidatAndOffre");
+		const { idCandidat, idOffre, idTest } = req.query;
+		console.log("idCandidat", idCandidat);
+		console.log("idOffre", idOffre);
+		// form passagetest get score of the test selelement
+		const resultat = await PassageTest.findOne({
+			idCandidat: idCandidat,
+			idOffre: idOffre,
+			idTest: idTest,
+		}).select("score idTest idCandidat idOffre");
+
+		console.log(resultat);
+		res.status(200).json(resultat);
+	} catch (err) {
+		res.status(400).json({ error: err });
+	}
+}
 async function rapportCandidat(req, res) {
 	try {
 		const { idCandidat, idOffre } = req.query;
@@ -217,4 +236,5 @@ module.exports = {
 	getAllResultsTests,
 	getResultTestsByOffre,
 	rapportCandidat,
+	getResultTestbyCandidatAndOffre,
 };

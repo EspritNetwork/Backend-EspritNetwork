@@ -38,10 +38,11 @@ router.get("/getbycompanyid", async (req, res) => {
 router.get("/getbyCompanyIdAndSessionId", async (req, res) => {
 	try {
 		console.log(" Session : getbyCompanyIdAndSessionId");
-		const sessions = await Session.find({
+		const sessions = await Session.findOne({
 			companyID: req.query.companyID,
 			_id: req.query.sessionID,
 		});
+		console.log(sessions);
 		res.status(200).json(sessions);
 	} catch (err) {
 		console.error(err);
