@@ -205,7 +205,7 @@ async function affecterTestAuCandidat(req, res) {
 		let data = req.body;
 		console.log(req.body);
 		console.log(idTest, idCandidat);
-		const exist = await PassageTest.findOne({ idTest, idCandidat });
+		const exist = await PassageTest.findOne({ idTest, idCandidat, idOffre });
 		if (exist) {
 			return res
 				.status(400)
@@ -412,7 +412,6 @@ const upload = multer({
 async function importAndInviteCandidatsToPassTest(req, res) {
 	try {
 		console.log(" Function : import And Invite Candidats To PassTest");
-		console.log("Received FormData:", req.body.id); // Log the FormData object
 		upload(req, res, async (err) => {
 			if (err) {
 				return res
@@ -442,9 +441,32 @@ async function importAndInviteCandidatsToPassTest(req, res) {
 				return res.status(400).json({ success: false, message: "No data" });
 			}
 
-			// get session by id from collect session
+			// create a array with id of candidats
+			const candidatsArray = [];
+			candidats.forEach((candidat) => {
+				let d = {
+					candidatId: candidat.Id,
+					candidatNom: candidat.Nom,
+					candidatEmail: candidat.Email,
+				};
+				candidatsArray.push(d);
+			});
+
+			console.log("candidatsArray", candidatsArray);
+
+			//find sessionn and update it
 			const s = await session.findById(req.body.id);
-			console.log("session", s);
+			if (!s) {
+				return res
+					.status(404)
+					.json({ success: false, message: "Session not found" });
+			}
+			//update the candidats in the session
+			await session.findOneAndUpdate(
+				{ _id: req.body.id },
+				{ $set: { candidats: candidatsArray } },
+				{ new: true }
+			);
 
 			// 3andi tableau data fih les les candidats  ismo candidats
 			const passage_test_data = [];

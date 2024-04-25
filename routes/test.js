@@ -23,9 +23,9 @@ router.post(
 	"/importAndInviteCandidatsToPassTest",
 	testController.importAndInviteCandidatsToPassTest
 );
-//router.get(
-// 	"/getResultTestsByOffre",
-// 	testResultsController.getResultTestsByOffre
-// );
+router.get(
+	"/getResultTestbyCandidatAndOffre",
+	testResultsController.getResultTestbyCandidatAndOffre
+);
 
 module.exports = router;
