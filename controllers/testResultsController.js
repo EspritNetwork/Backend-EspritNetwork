@@ -10,7 +10,7 @@ async function getResultTestsByOffre(req, res) {
 	try {
 		const { idOffre } = req.query;
 		const resultat = await PassageTest.find({ idOffre: idOffre });
-
+		console.log(resultat);
 		res.status(200).json(resultat);
 	} catch (err) {
 		res.status(400).json({ error: err });
