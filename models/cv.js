@@ -46,6 +46,7 @@ const CvSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User',
     },
+    barreprogress:[Number],
 });
 
 module.exports = mongoose.model("Cv", CvSchema);
